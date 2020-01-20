@@ -32,11 +32,12 @@ namespace common {
  * @enum error code
  */
 enum ErrorCode {
-    ERR_OK,          ///< no error
-    ERR_ERR,         ///< non-specific error
-    ERR_MEM,         ///< memory error
-    ERR_IN_PROGRESS, ///< successfully started, but not finished
-    ERR_BUSY,        ///< another operation is in progress
+    ERR_OK,             ///< no error
+    ERR_ERR,            ///< non-specific error
+    ERR_MEM,            ///< memory error
+    ERR_IN_PROGRESS,    ///< successfully started, but not finished
+    ERR_BUSY,           ///< another operation is in progress
+    ERR_INVAL_ARG,      ///< invalid arg
 };
 
-} // namespace event
+} // namespace common
