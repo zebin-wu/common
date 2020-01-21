@@ -22,16 +22,19 @@
 #include <ctime>
 #include <sys/time.h>
 #include <platform/clock.hpp>
+#include <platform/lock.hpp>
 
 #define THOUSAND 1000
 
 using namespace platform;
 
-Clock *Clock::m_pClock = NULL;
-Lock Clock::m_mutex(Lock::LOCK_MUTEX);
-Clock::GC Clock::GC::gc;
+class platform::ClockPriv {
+public:
+	ClockPriv(): mutex(Lock(Lock::LOCK_MUTEX)) {}
+	Lock mutex;
+};
 
-Clock::Clock()
+Clock::Clock(): priv(new ClockPriv)
 {
     resetSource();
 }
@@ -45,7 +48,7 @@ ErrorCode Clock::set(time_t timestamp, Source src)
     ErrorCode err = ERR_OK;
 	struct timeval now;
 
-	m_mutex.lock();
+	priv->mutex.lock();
 	if (src < this->src || src >= CS_LIMIT) {
 		err = ERR_INVAL_ARG;
 		goto exit;
@@ -58,7 +61,7 @@ ErrorCode Clock::set(time_t timestamp, Source src)
     }
 	this->src = src;
 exit:
-	m_mutex.unlock();
+	priv->mutex.unlock();
 	return err;
 }
 
@@ -67,13 +70,13 @@ time_t Clock::get(Source *src) const
 	struct timeval now;
 	time_t ct;
 
-	m_mutex.lock();
+	priv->mutex.lock();
 	gettimeofday(&now, NULL);
 	if (src) {
 		*src = this->src;
 	}
 	ct = now.tv_sec + (now.tv_usec / THOUSAND / THOUSAND);
-	m_mutex.unlock();
+	priv->mutex.unlock();
 	return ct;
 }
 
@@ -82,14 +85,14 @@ u64 Clock::getUTCMs(Source *src) const
 	struct timeval now;
 	u64 ct;
 
-	m_mutex.lock();
+	priv->mutex.lock();
 	gettimeofday(&now, NULL);
 	if (src) {
 		*src = this->src;
 	}
 	ct = (u64)now.tv_sec * THOUSAND +
 		(u64)now.tv_usec / THOUSAND;
-	m_mutex.unlock();
+	priv->mutex.unlock();
 	return (u64)ct;
 }
 
@@ -102,4 +105,11 @@ u64 Clock::getTotalMs() const
 	ct = (u64)ts.tv_sec * THOUSAND +
 	    (u64)ts.tv_nsec / THOUSAND / THOUSAND;
 	return ct;
+}
+
+void Clock::resetSource() 
+{
+	priv->mutex.lock();
+	src = CS_NONE;
+	priv->mutex.unlock();
 }

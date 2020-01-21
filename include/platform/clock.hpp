@@ -23,7 +23,6 @@
 
 #include <common/error.hpp>
 #include <platform/type.hpp>
-#include <platform/lock.hpp>
 
 /**
  * @file clock.hpp
@@ -34,11 +33,10 @@ using namespace common;
 
 namespace platform {
 
+class ClockPriv;    /// Only used by Clock, need a platform to implement.
+
 class Clock {
 public:
-
-    class ClockPriv;
-
     /**
      * @enum Time source codes.
      * 
@@ -64,15 +62,9 @@ public:
      * 
      * @return a clock instence.
      */
-    static Clock *Instence() {
-        if (m_pClock == NULL) {
-            m_mutex.lock();
-            m_mutex.unlock();
-            if (m_pClock == NULL) {
-                m_pClock = new Clock();
-            }
-        }
-        return m_pClock;
+    static Clock &Instance() {
+        static Clock instance;
+        return instance;
     }
 
     /**
@@ -109,28 +101,13 @@ public:
     /**
      * @brief Reset clock source
      */
-    void resetSource() {
-        m_mutex.lock();
-        src = CS_NONE;
-        m_mutex.unlock();
-    }
+    void resetSource();
 private:
-    Clock();
-
-    static Clock *m_pClock;
-    static Lock m_mutex;
+    explicit Clock();
+    explicit Clock(Clock const &); /// not need to implement
+    Clock &operator = (const Clock &); /// not need to implement
+    ClockPriv *priv;
     Source src;
-
-    class GC {
-    public:
-        ~GC() {
-            if (m_pClock != NULL) {
-                delete m_pClock;
-                m_pClock = NULL;
-            }
-        }
-        static GC gc;
-    };
 };
 
 } // namespace platform

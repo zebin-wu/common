@@ -19,49 +19,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#pragma once
+#include <pthread.h>
+#include <platform/lock.hpp>
 
-#include <common/error.hpp>
+using namespace platform;
 
-/**
- * @file lock.hpp
- * @brief Platform lock interfaces
- */
-
-namespace platform {
-
-class Lock {
+class platform::LockPriv {
 public:
-    /**
-     * @enum Lock types.
-     */
-    enum Type{
-        LOCK_MUTEX,         ///< mutex
-        LOCK_BINARY_SEM,    ///< binary semaphore
+    union {
+       pthread_mutex_t mutex;
     };
-
-    Lock(Type type = LOCK_MUTEX);
-    ~Lock();
-
-    /**
-     * @brief Lock the lock or take the semaphore.
-     * @details The function blocks the current thread when the lock is locked.
-     */
-    void lock();
-
-    /**
-     * @brief Unlock the lock or give the semaphore.
-     */
-    void unlock();
-
-    /**
-     * @brief Get the type of lock.
-     * 
-     * @return the type of lock.
-     */
-    Type getType() const;
-private:
-    Type type;
 };
 
-} // namespace platform
+Lock::Lock(Type type): type(type), priv(new LockPriv)
+{
+    switch (type) {
+    case LOCK_MUTEX:
+        pthread_mutex_init(&priv->mutex, NULL);
+        break;
+    default:
+        break;
+    }
+}
+
+Lock::~Lock()
+{
+    switch (type) {
+    case LOCK_MUTEX:
+        pthread_mutex_destroy(&priv->mutex);
+        break;
+    default:
+        break;
+    }
+    delete priv;
+}
+
+void Lock::lock()
+{
+    switch (type) {
+    case LOCK_MUTEX:
+        pthread_mutex_lock(&priv->mutex);
+        break;
+    defualt:
+        break;
+    }
+}
+
+void Lock::unlock()
+{
+    switch (type) {
+    case LOCK_MUTEX:
+        pthread_mutex_unlock(&priv->mutex);
+        break;
+    defualt:
+        break;
+    }
+}
