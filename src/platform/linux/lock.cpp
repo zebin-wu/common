@@ -19,11 +19,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#pragma once
+#include <pthread.h>
+#include <platform/lock.hpp>
 
-/**
- * @file config.hpp
- * @brief Platform configuration.
- */
+using namespace platform;
 
-#define PFM_SUPPORT_C_LIBRARY
+class platform::LockPriv {
+public:
+    union {
+       pthread_mutex_t mutex;
+    };
+};
+
+Lock::Lock(Type type): type(type), priv(new LockPriv)
+{
+    switch (type) {
+    case LOCK_MUTEX:
+        pthread_mutex_init(&priv->mutex, NULL);
+        break;
+    default:
+        break;
+    }
+}
+
+Lock::~Lock()
+{
+    switch (type) {
+    case LOCK_MUTEX:
+        pthread_mutex_destroy(&priv->mutex);
+        break;
+    default:
+        break;
+    }
+    delete priv;
+}
+
+void Lock::lock()
+{
+    switch (type) {
+    case LOCK_MUTEX:
+        pthread_mutex_lock(&priv->mutex);
+        break;
+    defualt:
+        break;
+    }
+}
+
+void Lock::unlock()
+{
+    switch (type) {
+    case LOCK_MUTEX:
+        pthread_mutex_unlock(&priv->mutex);
+        break;
+    defualt:
+        break;
+    }
+}

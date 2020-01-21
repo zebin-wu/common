@@ -22,8 +22,42 @@
 #pragma once
 
 /**
- * @file config.hpp
- * @brief Platform configuration.
+ * @file log.hpp
+ * @brief Common log
  */
 
-#define PFM_SUPPORT_C_LIBRARY
+namespace common {
+
+class Log {
+public:
+    enum Level {
+        LOG_NONE,
+        LOG_ERR,
+        LOG_WARN,
+        LOG_INFO,
+        LOG_DEBUG,
+    };
+
+    static Log &Instence() {
+        static Log log;
+        return log;
+    }
+
+    void put(Level level, const char *fmt, ...);
+private:
+    explicit Log(Level level = LOG_WARN);
+    explicit Log(Log const &); /// not need to implement
+    Log &operator = (const Log &); /// not need to implement
+};
+
+} // namespace common
+
+#define log_put(level, fmt, ...) \
+    do { \
+        common::Log::Instence().put(level, fmt, __VA_ARGS__) \
+    } while (0)
+
+#define log_err(fmt, ...)   log_put(common::Log::LOG_ERR, fmt, __VA_ARGS__)
+#define log_warn(fmt, ...)  log_put(common::Log::LOG_WARN, fmt, __VA_ARGS__)
+#define log_info(fmt, ...)  log_put(common::Log::LOG_INFO, fmt, __VA_ARGS__)
+#define log_debug(fmt, ...) log_put(common::Log::LOG_DEBUG, fmt, __VA_ARGS__)
