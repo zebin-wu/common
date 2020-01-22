@@ -40,4 +40,4 @@ enum ErrorCode {
     ERR_INVAL_ARG,      ///< invalid arg
 };
 
-} // namespace common
+}  // namespace common
