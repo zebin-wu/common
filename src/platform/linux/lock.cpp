@@ -22,17 +22,16 @@
 #include <pthread.h>
 #include <platform/lock.hpp>
 
-using namespace platform;
+namespace platform {
 
-class platform::LockPriv {
-public:
+class LockPriv {
+ public:
     union {
        pthread_mutex_t mutex;
     };
 };
 
-Lock::Lock(Type type): type(type), priv(new LockPriv)
-{
+Lock::Lock(Type type): type(type), priv(new LockPriv) {
     switch (type) {
     case LOCK_MUTEX:
         pthread_mutex_init(&priv->mutex, NULL);
@@ -42,8 +41,7 @@ Lock::Lock(Type type): type(type), priv(new LockPriv)
     }
 }
 
-Lock::~Lock()
-{
+Lock::~Lock() {
     switch (type) {
     case LOCK_MUTEX:
         pthread_mutex_destroy(&priv->mutex);
@@ -54,8 +52,7 @@ Lock::~Lock()
     delete priv;
 }
 
-void Lock::lock()
-{
+void Lock::lock() {
     switch (type) {
     case LOCK_MUTEX:
         pthread_mutex_lock(&priv->mutex);
@@ -65,8 +62,7 @@ void Lock::lock()
     }
 }
 
-void Lock::unlock()
-{
+void Lock::unlock() {
     switch (type) {
     case LOCK_MUTEX:
         pthread_mutex_unlock(&priv->mutex);
@@ -75,3 +71,5 @@ void Lock::unlock()
         break;
     }
 }
+
+}  // namespace platform

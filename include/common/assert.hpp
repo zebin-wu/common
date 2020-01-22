@@ -30,14 +30,14 @@
 
 #ifdef PFM_SUPPORT_C_LIBRARY
 #include <cassert>
-#else // PFM_SUPPORT_C_LIBRARY
+#else  // PFM_SUPPORT_C_LIBRARY
 #include <platform/assert.hpp>
-#endif // PFM_SUPPORT_C_LIBRARY
+#endif  // PFM_SUPPORT_C_LIBRARY
 
 #ifdef PFM_SUPPORT_C_LIBRARY
 #define ASSERT(expr)  assert(expr)
 #define ASSERT_NOTREACHED()   ASSERT(0)
-#else // PFM_SUPPORT_C_LIBRARY
+#else  // PFM_SUPPORT_C_LIBRARY
 #define ASSERT(expr) \
     do { \
         if (!expr) { \
@@ -48,4 +48,4 @@
     do { \
         pfm_assert_handle(__FILE__, __LINE__, "", __func__); \
     } while (0)
-#endif // PFM_SUPPORT_C_LIBRARY
+#endif  // PFM_SUPPORT_C_LIBRARY

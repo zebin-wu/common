@@ -29,14 +29,14 @@
  * @brief Platform clock interfaces
  */
 
-using namespace common;
+using common::ErrorCode;
 
 namespace platform {
 
 class ClockPriv;    /// Only used by Clock, need a platform to implement.
 
 class Clock {
-public:
+ public:
     /**
      * @enum Time source codes.
      * 
@@ -49,7 +49,7 @@ public:
         CS_LOCAL,           ///< Set by local.
         CS_MCU_LO,          ///< Set by MCU. low priority.
         CS_SERVER,          ///< Set using server time.
-        CS_SNTP = CS_SERVER,///< Set using SNTP, not kept in sync.
+        CS_SNTP,            ///< Set using SNTP, not kept in sync.
         CS_NTP,             ///< Set using NTP.
         CS_MCU_HI,          ///< Set by MCU. high priority.
         CS_LIMIT,           ///< Must be last.
@@ -102,12 +102,13 @@ public:
      * @brief Reset clock source
      */
     void resetSource();
-private:
-    explicit Clock();
-    explicit Clock(Clock const &); /// not need to implement
-    Clock &operator = (const Clock &); /// not need to implement
+
+ private:
+    Clock();
+    explicit Clock(Clock const &);  /// not need to implement
+    Clock &operator = (const Clock &);  /// not need to implement
     ClockPriv *priv;
     Source src;
 };
 
-} // namespace platform
+}  // namespace platform

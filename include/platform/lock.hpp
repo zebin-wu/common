@@ -33,7 +33,7 @@ namespace platform {
 class LockPriv;    /// Only used by Lock, need a platform to implement.
 
 class Lock {
-public:
+ public:
     /**
      * @enum Lock types.
      */
@@ -41,7 +41,7 @@ public:
         LOCK_MUTEX,         ///< mutex
     };
 
-    Lock(Type type = LOCK_MUTEX);
+    explicit Lock(Type type = LOCK_MUTEX);
     ~Lock();
 
     /**
@@ -61,9 +61,10 @@ public:
      * @return the type of lock.
      */
     Type getType() const { return type; }
-private:
+
+ private:
     LockPriv *priv;
     const Type type;
 };
 
-} // namespace platform
+}  // namespace platform

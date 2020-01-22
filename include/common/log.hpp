@@ -29,7 +29,7 @@
 namespace common {
 
 class Log {
-public:
+ public:
     enum Level {
         LOG_NONE,
         LOG_ERR,
@@ -44,13 +44,13 @@ public:
     }
 
     void put(Level level, const char *fmt, ...);
-private:
+ private:
     explicit Log(Level level = LOG_WARN);
-    explicit Log(Log const &); /// not need to implement
-    Log &operator = (const Log &); /// not need to implement
+    explicit Log(Log const &);  /// not need to implement
+    Log &operator = (const Log &);  /// not need to implement
 };
 
-} // namespace common
+}  // namespace common
 
 #define log_put(level, fmt, ...) \
     do { \
