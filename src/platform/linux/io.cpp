@@ -19,46 +19,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#pragma once
-
+#include <cstdio>
 #include <platform/args.hpp>
-#include <common/error.hpp>
+#include <platform/io.hpp>
 
-/**
- * @file log.hpp
- * @brief Common log
- */
+namespace platform {
 
-namespace common {
+static FILE *getFileStream(int fileNo) {
+    switch (fileNo) {
+    case IO::STDIN:
+        return stdin;
+        break;
+    case IO::STDOUT:
+        return stdout;
+        break;
+    case IO::STDERR:
+        return stderr;
+        break;
+    default:
+        break;
+    }
+    return NULL;
+}
 
-class Log {
- public:
-    enum Level {
-        LOG_NONE,
-        LOG_ERR,
-        LOG_WARN,
-        LOG_INFO,
-        LOG_DEBUG,
-    };
+void IO::printNo(int fileNo, const char *fmt, ...) {
+    va_list ap;
 
-    static void put(Level level, const char *fmt, ...) ARGS_FORMAT(2, 3);
+    va_start(ap, fmt);
+    vfprintf(getFileStream(fileNo), fmt, ap);
+    va_end(ap);
+}
 
-    static Level getLevel();
-    static void setLevel(Level level);
- private:
-    explicit Log(Level level = LOG_WARN);
-    explicit Log(Log const &);  /// not need to implement
-    Log &operator = (const Log &);  /// not need to implement
-};
-
-}  // namespace common
-
-#define log_put(level, ...) \
-    do { \
-        common::Log::put(level, __VA_ARGS__); \
-    } while (0)
-
-#define log_err(...)   log_put(common::Log::LOG_ERR, __VA_ARGS__)
-#define log_warn(...)  log_put(common::Log::LOG_WARN, __VA_ARGS__)
-#define log_info(...)  log_put(common::Log::LOG_INFO, __VA_ARGS__)
-#define log_debug(...) log_put(common::Log::LOG_DEBUG, __VA_ARGS__)
+}  // namespace platform

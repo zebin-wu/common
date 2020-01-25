@@ -21,44 +21,19 @@
  */
 #pragma once
 
-#include <platform/args.hpp>
-#include <common/error.hpp>
+#include <platform/config.hpp>
 
 /**
- * @file log.hpp
- * @brief Common log
+ * @file args.hpp
+ * @brief Platform variable arguments.
  */
 
-namespace common {
+#define ARGS_FORMAT(x, y) __attribute__((format(printf, x, y)))
 
-class Log {
- public:
-    enum Level {
-        LOG_NONE,
-        LOG_ERR,
-        LOG_WARN,
-        LOG_INFO,
-        LOG_DEBUG,
-    };
-
-    static void put(Level level, const char *fmt, ...) ARGS_FORMAT(2, 3);
-
-    static Level getLevel();
-    static void setLevel(Level level);
- private:
-    explicit Log(Level level = LOG_WARN);
-    explicit Log(Log const &);  /// not need to implement
-    Log &operator = (const Log &);  /// not need to implement
-};
-
-}  // namespace common
-
-#define log_put(level, ...) \
-    do { \
-        common::Log::put(level, __VA_ARGS__); \
-    } while (0)
-
-#define log_err(...)   log_put(common::Log::LOG_ERR, __VA_ARGS__)
-#define log_warn(...)  log_put(common::Log::LOG_WARN, __VA_ARGS__)
-#define log_info(...)  log_put(common::Log::LOG_INFO, __VA_ARGS__)
-#define log_debug(...) log_put(common::Log::LOG_DEBUG, __VA_ARGS__)
+#ifdef PFM_SUPPORT_C_LIBRARY
+#include <cstdarg>
+#else  // PFM_SUPPORT_C_LIBRARY
+#define va_list
+#define va_start(v, l)
+#define va_end(v)
+#endif  // PFM_SUPPORT_C_LIBRARY

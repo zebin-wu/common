@@ -22,43 +22,23 @@
 #pragma once
 
 #include <platform/args.hpp>
-#include <common/error.hpp>
 
 /**
- * @file log.hpp
- * @brief Common log
+ * @file io.hpp
+ * @brief Platform IO interfaces
  */
 
-namespace common {
+namespace platform {
 
-class Log {
+class IO {
  public:
-    enum Level {
-        LOG_NONE,
-        LOG_ERR,
-        LOG_WARN,
-        LOG_INFO,
-        LOG_DEBUG,
+    enum FileNo {
+        STDIN,
+        STDOUT,
+        STDERR,
     };
 
-    static void put(Level level, const char *fmt, ...) ARGS_FORMAT(2, 3);
-
-    static Level getLevel();
-    static void setLevel(Level level);
- private:
-    explicit Log(Level level = LOG_WARN);
-    explicit Log(Log const &);  /// not need to implement
-    Log &operator = (const Log &);  /// not need to implement
+    static void printNo(int fileNo, const char *fmt, ...) ARGS_FORMAT(2, 3);
 };
 
-}  // namespace common
-
-#define log_put(level, ...) \
-    do { \
-        common::Log::put(level, __VA_ARGS__); \
-    } while (0)
-
-#define log_err(...)   log_put(common::Log::LOG_ERR, __VA_ARGS__)
-#define log_warn(...)  log_put(common::Log::LOG_WARN, __VA_ARGS__)
-#define log_info(...)  log_put(common::Log::LOG_INFO, __VA_ARGS__)
-#define log_debug(...) log_put(common::Log::LOG_DEBUG, __VA_ARGS__)
+}  // namespace platform
