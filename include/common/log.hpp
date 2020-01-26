@@ -21,15 +21,21 @@
  */
 #pragma once
 
+#include <platform/args.hpp>
+#include <common/error.hpp>
+
 /**
  * @file log.hpp
- * @brief Common log
+ * @brief Common log interfaces.
  */
 
 namespace common {
 
 class Log {
  public:
+    /**
+     * @enum Log level.
+     */
     enum Level {
         LOG_NONE,
         LOG_ERR,
@@ -38,26 +44,42 @@ class Log {
         LOG_DEBUG,
     };
 
-    static Log &Instence() {
-        static Log log;
-        return log;
-    }
+    /**
+     * @brief Log message.
+     * 
+     * @param level is the log level of the message.
+     * @param fmt is the format string.(see printf() in C library)
+     */
+    static void put(Level level, const char *fmt, ...) ARGS_FORMAT(2, 3);
 
-    void put(Level level, const char *fmt, ...);
+    /**
+     * @brief Get the level of log system.
+     * 
+     * @return the log level.
+     */
+    static Level getLevel();
+
+    /**
+     * @brief Set the level of log system.
+     * 
+     * @param level is the level of log system.
+     */
+    static void setLevel(Level level);
+
  private:
-    explicit Log(Level level = LOG_WARN);
+    Log();  /// not need to implement
     explicit Log(Log const &);  /// not need to implement
     Log &operator = (const Log &);  /// not need to implement
 };
 
 }  // namespace common
 
-#define log_put(level, fmt, ...) \
+#define log_put(level, ...) \
     do { \
-        common::Log::Instence().put(level, fmt, __VA_ARGS__) \
+        common::Log::put(level, __VA_ARGS__); \
     } while (0)
 
-#define log_err(fmt, ...)   log_put(common::Log::LOG_ERR, fmt, __VA_ARGS__)
-#define log_warn(fmt, ...)  log_put(common::Log::LOG_WARN, fmt, __VA_ARGS__)
-#define log_info(fmt, ...)  log_put(common::Log::LOG_INFO, fmt, __VA_ARGS__)
-#define log_debug(fmt, ...) log_put(common::Log::LOG_DEBUG, fmt, __VA_ARGS__)
+#define log_err(...)   log_put(common::Log::LOG_ERR, __VA_ARGS__)
+#define log_warn(...)  log_put(common::Log::LOG_WARN, __VA_ARGS__)
+#define log_info(...)  log_put(common::Log::LOG_INFO, __VA_ARGS__)
+#define log_debug(...) log_put(common::Log::LOG_DEBUG, __VA_ARGS__)

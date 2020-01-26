@@ -21,6 +21,7 @@
  */
 #include <sys/time.h>
 #include <ctime>
+#include <common/assert.hpp>
 #include <platform/clock.hpp>
 #include <platform/lock.hpp>
 
@@ -38,7 +39,9 @@ Clock::Clock(): priv(new ClockPriv) {
     resetSource();
 }
 
-Clock::~Clock() {}
+Clock::~Clock() {
+    delete priv;
+}
 
 ErrorCode Clock::set(time_t timestamp, Source src) {
     ErrorCode err = common::ERR_OK;
@@ -98,6 +101,16 @@ u64 Clock::getTotalMs() const {
     ct = (u64)ts.tv_sec * THOUSAND +
         (u64)ts.tv_nsec / THOUSAND / THOUSAND;
     return ct;
+}
+
+ErrorCode Clock::getFormat(char *str, size_t len) {
+    struct timeval tv;
+
+    ASSERT(len >= CLOCK_FORMAT_STRING_LEN);
+
+    gettimeofday(&tv, NULL);
+    return strftime(str, len, "%m/%d/%Y %H:%M:%S", localtime(&tv.tv_sec)) ?
+        common::ERR_OK : common::ERR_INVAL_ARG;
 }
 
 void Clock::resetSource() {

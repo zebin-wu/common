@@ -21,23 +21,25 @@
  */
 #pragma once
 
-/**
- * @file error.hpp
- * @brief Error code
- */
-
-namespace common {
+#include <platform/args.hpp>
 
 /**
- * @enum error code
+ * @file io.hpp
+ * @brief Platform IO interfaces
  */
-enum ErrorCode {
-    ERR_OK,             ///< no error
-    ERR_ERR,            ///< non-specific error
-    ERR_MEM,            ///< memory error
-    ERR_IDLE,           ///< not active or in use
-    ERR_BUSY,           ///< another operation is in progress
-    ERR_INVAL_ARG,      ///< invalid arg
+
+namespace platform {
+
+class IO {
+ public:
+    enum FileNo {
+        STDIN,
+        STDOUT,
+        STDERR,
+    };
+
+    static void printNo(int fileNo, const char *fmt, ...) ARGS_FORMAT(2, 3);
+    static void vprintNo(int fileNo, const char *fmt, va_list args);
 };
 
-}  // namespace common
+}  // namespace platform

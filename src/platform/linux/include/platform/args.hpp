@@ -21,23 +21,19 @@
  */
 #pragma once
 
-/**
- * @file error.hpp
- * @brief Error code
- */
-
-namespace common {
+#include <platform/config.hpp>
 
 /**
- * @enum error code
+ * @file args.hpp
+ * @brief Platform variable arguments.
  */
-enum ErrorCode {
-    ERR_OK,             ///< no error
-    ERR_ERR,            ///< non-specific error
-    ERR_MEM,            ///< memory error
-    ERR_IDLE,           ///< not active or in use
-    ERR_BUSY,           ///< another operation is in progress
-    ERR_INVAL_ARG,      ///< invalid arg
-};
 
-}  // namespace common
+#define ARGS_FORMAT(x, y) __attribute__((format(printf, x, y)))
+
+#ifdef PFM_SUPPORT_C_LIBRARY
+#include <cstdarg>
+#else  // PFM_SUPPORT_C_LIBRARY
+#define va_list
+#define va_start(v, l)
+#define va_end(v)
+#endif  // PFM_SUPPORT_C_LIBRARY

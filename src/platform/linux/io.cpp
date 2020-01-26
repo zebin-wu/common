@@ -19,25 +19,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#pragma once
+#include <cstdio>
+#include <platform/args.hpp>
+#include <platform/io.hpp>
 
-/**
- * @file error.hpp
- * @brief Error code
- */
+namespace platform {
 
-namespace common {
+static FILE *getFileStream(int fileNo) {
+    switch (fileNo) {
+    case IO::STDIN:
+        return stdin;
+        break;
+    case IO::STDOUT:
+        return stdout;
+        break;
+    case IO::STDERR:
+        return stderr;
+        break;
+    default:
+        break;
+    }
+    return NULL;
+}
 
-/**
- * @enum error code
- */
-enum ErrorCode {
-    ERR_OK,             ///< no error
-    ERR_ERR,            ///< non-specific error
-    ERR_MEM,            ///< memory error
-    ERR_IDLE,           ///< not active or in use
-    ERR_BUSY,           ///< another operation is in progress
-    ERR_INVAL_ARG,      ///< invalid arg
-};
+void IO::printNo(int fileNo, const char *fmt, ...) {
+    va_list ap;
 
-}  // namespace common
+    va_start(ap, fmt);
+    vfprintf(getFileStream(fileNo), fmt, ap);
+    va_end(ap);
+}
+
+void IO::vprintNo(int fileNo, const char *fmt, va_list args) {
+    vfprintf(getFileStream(fileNo), fmt, args);
+}
+
+}  // namespace platform

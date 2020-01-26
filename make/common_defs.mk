@@ -54,10 +54,9 @@ endef
 # $2: Method
 # $3: Source files
 # $4: Extra link switchs
-# $5: Dependent target
 #
 define BUILD_TARGET_RULES
-$1: $(3:%.cpp=$(BUILD_DIR)/%.o) $5
+$1: $(3:%.cpp=$(BUILD_DIR)/%.o)
 	$(QUIET)[ -d $(shell dirname $1) ] || mkdir -p $(shell dirname $1);\
 	    $(call $2, $1, $3, $4)
 endef
