@@ -50,4 +50,8 @@ void IO::printNo(int fileNo, const char *fmt, ...) {
     va_end(ap);
 }
 
+void IO::vprintNo(int fileNo, const char *fmt, va_list args) {
+    vfprintf(getFileStream(fileNo), fmt, args);
+}
+
 }  // namespace platform

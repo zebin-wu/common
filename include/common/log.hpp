@@ -26,13 +26,16 @@
 
 /**
  * @file log.hpp
- * @brief Common log
+ * @brief Common log interfaces.
  */
 
 namespace common {
 
 class Log {
  public:
+    /**
+     * @enum Log level.
+     */
     enum Level {
         LOG_NONE,
         LOG_ERR,
@@ -41,12 +44,30 @@ class Log {
         LOG_DEBUG,
     };
 
+    /**
+     * @brief Log message.
+     * 
+     * @param level is the log level of the message.
+     * @param fmt is the format string.(see printf() in C library)
+     */
     static void put(Level level, const char *fmt, ...) ARGS_FORMAT(2, 3);
 
+    /**
+     * @brief Get the level of log system.
+     * 
+     * @return the log level.
+     */
     static Level getLevel();
+
+    /**
+     * @brief Set the level of log system.
+     * 
+     * @param level is the level of log system.
+     */
     static void setLevel(Level level);
+
  private:
-    explicit Log(Level level = LOG_WARN);
+    Log();  /// not need to implement
     explicit Log(Log const &);  /// not need to implement
     Log &operator = (const Log &);  /// not need to implement
 };

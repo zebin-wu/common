@@ -31,6 +31,12 @@
 
 using common::ErrorCode;
 
+/// The length of clock format string("MM/DD/YYYY hh:mm:ss").
+#define CLOCK_FORMAT_STRING_LEN 20
+
+/// Returns true if the time a(u64) is after time b(u64).
+#define TIME_AFTER(a, b) ((s64)(b) - (s64)(a) < 0)
+
 namespace platform {
 
 class ClockPriv;    /// Only used by Clock, need a platform to implement.
@@ -55,6 +61,14 @@ class Clock {
         CS_LIMIT,           ///< Must be last.
     };
 
+    /**
+     * @enum 
+     */
+    enum TimeZone {
+        CT_LOCAL,
+        CT_UTC,
+    };
+
     ~Clock();
 
     /**
@@ -72,6 +86,7 @@ class Clock {
      * 
      * @param timestamp is the time as the number of seconds since 1970-01-01 00:00 (UTC).
      * @param src is the time source.
+     * @return the error code.
      */
     ErrorCode set(time_t timestamp, Source src);
 
@@ -82,6 +97,16 @@ class Clock {
      * @return the time as the number of seconds since 1970-01-01 00:00 (UTC).
      */
     time_t get(Source *src) const;
+
+    /**
+     * @brief convert clock to "MM/DD/YYYY hh:mm:ss" format
+     * @note str length is 20bytes
+     * 
+     * @param str is the buf to store the format string.
+     * @param len is the length of str.
+     * @return the error code.
+     */
+    ErrorCode getFormat(char *str, size_t len);
 
     /**
      * @brief Get clock (ms)

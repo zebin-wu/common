@@ -23,6 +23,7 @@
 #include <platform/args.hpp>
 #include <platform/io.hpp>
 #include <platform/lock.hpp>
+#include <platform/clock.hpp>
 
 namespace common {
 
@@ -44,7 +45,7 @@ static LogPriv logPriv;
 /**
  * @brief Return a string literal with the log message prefix.
  */
-const char *getLogPrefix(Log::Level level) {
+static const char *getLogLevelString(Log::Level level) {
     switch (level) {
     case Log::LOG_WARN:
         return "WRN";
@@ -62,12 +63,15 @@ const char *getLogPrefix(Log::Level level) {
 void Log::put(Level level, const char *fmt, ...) {
     va_list ap;
     int fileNo;
+    char clock_str[CLOCK_FORMAT_STRING_LEN];
 
     if (level <= logPriv.level) {
         fileNo = logPriv.getFileNo();
-        platform::IO::printNo(fileNo, "[%s]", getLogPrefix(level));
+        platform::Clock::Instance().getFormat(clock_str, sizeof(clock_str));
+        platform::IO::printNo(fileNo, "[%s] %s ",
+            getLogLevelString(level), clock_str);
         va_start(ap, fmt);
-        platform::IO::printNo(fileNo, fmt, ap);
+        platform::IO::vprintNo(fileNo, fmt, ap);
         va_end(ap);
         platform::IO::printNo(fileNo, "\n");
     }

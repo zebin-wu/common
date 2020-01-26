@@ -39,6 +39,7 @@ class IO {
     };
 
     static void printNo(int fileNo, const char *fmt, ...) ARGS_FORMAT(2, 3);
+    static void vprintNo(int fileNo, const char *fmt, va_list args);
 };
 
 }  // namespace platform
