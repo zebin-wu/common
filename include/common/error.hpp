@@ -18,19 +18,19 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #pragma once
 
 /**
  * @file error.hpp
  * @brief Error code
- */
+*/
 
 namespace common {
 
 /**
  * @enum error code
- */
+*/
 enum ErrorCode {
     ERR_OK,             ///< no error
     ERR_ERR,            ///< non-specific error

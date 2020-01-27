@@ -18,12 +18,12 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #pragma once
 
 /**
  * @file config.hpp
  * @brief Platform configuration.
- */
+*/
 
 #define PFM_SUPPORT_C_LIBRARY

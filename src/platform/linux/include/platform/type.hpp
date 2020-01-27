@@ -18,29 +18,29 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #pragma once
 
 /**
  * @file type.hpp
  * @brief Platform types.
- */
+*/
 
 #include <sys/types.h>
 #include <cstdint>
 #include <cstddef>
 
 #ifndef PFM_HAVE_UTYPES
-typedef uint8_t u8;             /**< unsigned 8-bit integer */
-typedef uint16_t u16;           /**< unsigned 16-bit integer */
-typedef uint32_t u32;           /**< unsigned 32-bit integer */
+typedef uint8_t u8;             ///< unsigned 8-bit integer
+typedef uint16_t u16;           ///< unsigned 16-bit integer
+typedef uint32_t u32;           ///< unsigned 32-bit integer
 
-typedef int8_t s8;              /**< signed 8-bit integer */
-typedef int16_t s16;            /**< signed 16-bit integer */
-typedef int32_t s32;            /**< signed 32-bit integer */
+typedef int8_t s8;              ///< signed 8-bit integer
+typedef int16_t s16;            ///< signed 16-bit integer
+typedef int32_t s32;            ///< signed 32-bit integer
 #endif
 
 #ifndef PFM_HAVE_UTYPES_64
-typedef uint64_t u64;           /**< unsigned 64-bit integer */
-typedef int64_t s64;            /**< signed 64-bit integer */
+typedef uint64_t u64;           ///< unsigned 64-bit integer
+typedef int64_t s64;            ///< signed 64-bit integer
 #endif

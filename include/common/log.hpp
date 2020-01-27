@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #pragma once
 
 #include <platform/args.hpp>
@@ -27,7 +27,7 @@
 /**
  * @file log.hpp
  * @brief Common log interfaces.
- */
+*/
 
 namespace common {
 
@@ -35,7 +35,7 @@ class Log {
  public:
     /**
      * @enum Log level.
-     */
+    */
     enum Level {
         LOG_NONE,
         LOG_ERR,
@@ -49,21 +49,21 @@ class Log {
      * 
      * @param level is the log level of the message.
      * @param fmt is the format string.(see printf() in C library)
-     */
+    */
     static void put(Level level, const char *fmt, ...) ARGS_FORMAT(2, 3);
 
     /**
      * @brief Get the level of log system.
      * 
      * @return the log level.
-     */
+    */
     static Level getLevel();
 
     /**
      * @brief Set the level of log system.
      * 
      * @param level is the level of log system.
-     */
+    */
     static void setLevel(Level level);
 
  private:

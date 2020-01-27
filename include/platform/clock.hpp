@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #pragma once
 
 #include <common/error.hpp>
@@ -27,7 +27,7 @@
 /**
  * @file clock.hpp
  * @brief Platform clock interfaces
- */
+*/
 
 using common::ErrorCode;
 
@@ -47,7 +47,7 @@ class Clock {
      * @enum Time source codes.
      * 
      * @note Larger numbers indicate more reliable clock sources.
-     */
+    */
     enum Source {
         CS_NONE,            ///< Never been set.
         CS_MIN,             ///< The min source
@@ -63,7 +63,7 @@ class Clock {
 
     /**
      * @enum 
-     */
+    */
     enum TimeZone {
         CT_LOCAL,
         CT_UTC,
@@ -75,7 +75,7 @@ class Clock {
      * @brief Get a clock instence.
      * 
      * @return a clock instence.
-     */
+    */
     static Clock &Instance() {
         static Clock instance;
         return instance;
@@ -87,7 +87,7 @@ class Clock {
      * @param timestamp is the time as the number of seconds since 1970-01-01 00:00 (UTC).
      * @param src is the time source.
      * @return the error code.
-     */
+    */
     ErrorCode set(time_t timestamp, Source src);
 
     /**
@@ -95,7 +95,7 @@ class Clock {
      * 
      * @param src is the buffer to retrieve the clock source, it can be NULL.
      * @return the time as the number of seconds since 1970-01-01 00:00 (UTC).
-     */
+    */
     time_t get(Source *src) const;
 
     /**
@@ -105,7 +105,7 @@ class Clock {
      * @param str is the buf to store the format string.
      * @param len is the length of str.
      * @return the error code.
-     */
+    */
     ErrorCode getFormat(char *str, size_t len);
 
     /**
@@ -113,19 +113,19 @@ class Clock {
      * 
      * @param src is the buffer to retrieve the clock source, it can be NULL.
      * @return the time as the number of milliseconds since 1970-01-01 00:00 (UTC).
-     */
+    */
     u64 getUTCMs(Source *src) const;
 
     /**
      * @brief Get 64 bits system tick
      * 
      * @return the system tick since the system boots.
-     */
+    */
     u64 getTotalMs() const;
 
     /**
      * @brief Reset clock source
-     */
+    */
     void resetSource();
 
  private:

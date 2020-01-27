@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #pragma once
 
 #include <common/error.hpp>
@@ -26,7 +26,7 @@
 /**
  * @file lock.hpp
  * @brief Platform lock interfaces
- */
+*/
 
 namespace platform {
 
@@ -36,7 +36,7 @@ class Lock {
  public:
     /**
      * @enum Lock types.
-     */
+    */
     enum Type{
         LOCK_MUTEX,         ///< mutex
     };
@@ -47,19 +47,19 @@ class Lock {
     /**
      * @brief Lock the lock or take the semaphore.
      * @details The function blocks the current thread when the lock is locked.
-     */
+    */
     void lock();
 
     /**
      * @brief Unlock the lock or give the semaphore.
-     */
+    */
     void unlock();
 
     /**
      * @brief Get the type of lock.
      * 
      * @return the type of lock.
-     */
+    */
     Type getType() const { return type; }
 
  private:

@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #include <sys/time.h>
 #include <ctime>
 #include <common/assert.hpp>
@@ -55,7 +55,7 @@ ErrorCode Clock::set(time_t timestamp, Source src) {
 
     now.tv_sec = timestamp;
     now.tv_usec = 0;
-    if (settimeofday(&now, NULL)) {
+    if (settimeofday(&now, nullptr)) {
         err = common::ERR_ERR;
     }
     this->src = src;
@@ -69,7 +69,7 @@ time_t Clock::get(Source *src) const {
     time_t ct;
 
     priv->mutex.lock();
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
     if (src) {
         *src = this->src;
     }
@@ -83,7 +83,7 @@ u64 Clock::getUTCMs(Source *src) const {
     u64 ct;
 
     priv->mutex.lock();
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
     if (src) {
         *src = this->src;
     }
@@ -108,7 +108,7 @@ ErrorCode Clock::getFormat(char *str, size_t len) {
 
     ASSERT(len >= CLOCK_FORMAT_STRING_LEN);
 
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, nullptr);
     return strftime(str, len, "%m/%d/%Y %H:%M:%S", localtime(&tv.tv_sec)) ?
         common::ERR_OK : common::ERR_INVAL_ARG;
 }

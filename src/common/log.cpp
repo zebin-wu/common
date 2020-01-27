@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #include <common/log.hpp>
 #include <platform/args.hpp>
 #include <platform/io.hpp>
@@ -44,7 +44,7 @@ static LogPriv logPriv;
 
 /**
  * @brief Return a string literal with the log message prefix.
- */
+*/
 static const char *getLogLevelString(Log::Level level) {
     switch (level) {
     case Log::LOG_WARN:

@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #include <pthread.h>
 #include <platform/lock.hpp>
 
@@ -34,7 +34,7 @@ class LockPriv {
 Lock::Lock(Type type): type(type), priv(new LockPriv) {
     switch (type) {
     case LOCK_MUTEX:
-        pthread_mutex_init(&priv->mutex, NULL);
+        pthread_mutex_init(&priv->mutex, nullptr);
         break;
     default:
         break;
