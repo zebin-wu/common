@@ -95,7 +95,7 @@ LIBCOMMON_STATIC = $(LIB_DIR)/$(LIBCOMMON_NAME).a
 #
 # Compile command line switch of CPP
 #
-CPPFLAGS += -fPIC -ffunction-sections -fdata-sections
+CPPFLAGS += -fPIC -ffunction-sections -fdata-sections -std=c++11
 
 #
 # Compile command line switch of LD
