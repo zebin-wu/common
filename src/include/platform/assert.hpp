@@ -18,14 +18,14 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 
 #pragma once
 
 /**
  * @file assert.hpp
  * @brief Platform assert Interfaces.
- */
+*/
 
 /**
  * @brief It's called when the assert occurs.
@@ -34,6 +34,6 @@
  * @param line is the line number where the assert occurs.
  * @param expr is the expression where the assert occurs.
  * @param func is the function where the assert occurs.
- */
+*/
 void pfm_assert_handle(const char *file, int line,
     const char *expr, const char *func);

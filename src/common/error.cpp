@@ -19,33 +19,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#pragma once
+#include <common/error.hpp>
+#include <common/assert.hpp>
+#include <platform/type.hpp>
+
+namespace common {
 
 /**
- * @file type.hpp
- * @brief Platform types.
-*/
+ * Initializer for error strings array.
+ * Keep this in sync with the enum al_err definition.
+ */
+static const char *error_str_array[] = {
+    "none",
+    "error",
+    "memory error",
+    "idle",
+    "busy",
+    "invalid arguments",
+    "operation not permitted",
+};
 
-#include <sys/types.h>
-#include <cstdint>
-#include <cstddef>
+const char *getErrorString(ErrorCode err) {
+    ASSERT(err >= 0 && err < ARRAY_LEN(error_str_array));
+    return error_str_array[err];
+}
 
-#ifndef PFM_HAVE_UTYPES
-typedef uint8_t u8;             ///< unsigned 8-bit integer
-typedef uint16_t u16;           ///< unsigned 16-bit integer
-typedef uint32_t u32;           ///< unsigned 32-bit integer
-
-typedef int8_t s8;              ///< signed 8-bit integer
-typedef int16_t s16;            ///< signed 16-bit integer
-typedef int32_t s32;            ///< signed 32-bit integer
-#endif
-
-#ifndef PFM_HAVE_UTYPES_64
-typedef uint64_t u64;           ///< unsigned 64-bit integer
-typedef int64_t s64;            ///< signed 64-bit integer
-#endif
-
-#ifndef ARRAY_LEN
-/// The length of array.
-#define ARRAY_LEN(x) (sizeof(x) / sizeof(*(x)))
-#endif /* ARRAY_LEN */
+}  // namespace common

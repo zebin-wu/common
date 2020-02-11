@@ -18,19 +18,19 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+*/
 #pragma once
 
 /**
  * @file error.hpp
  * @brief Error code
- */
+*/
 
 namespace common {
 
 /**
  * @enum error code
- */
+*/
 enum ErrorCode {
     ERR_OK,             ///< no error
     ERR_ERR,            ///< non-specific error
@@ -38,6 +38,15 @@ enum ErrorCode {
     ERR_IDLE,           ///< not active or in use
     ERR_BUSY,           ///< another operation is in progress
     ERR_INVAL_ARG,      ///< invalid arg
+    ERR_PERM,           ///< operation not permitted
 };
+
+/**
+ * @brief Lookup a human-readable definition of an error code.
+ * 
+ * @param err is an error code.
+ * @return a pointer to a string describing the error.
+*/
+const char *getErrorString(ErrorCode err);
 
 }  // namespace common
