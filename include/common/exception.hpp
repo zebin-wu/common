@@ -21,31 +21,32 @@
 */
 #pragma once
 
+#include <common/error.hpp>
+
 /**
- * @file type.hpp
- * @brief Platform types.
+ * @file error.hpp
+ * @brief class Exception
 */
 
-#include <sys/types.h>
-#include <cstdint>
-#include <cstddef>
+namespace common {
 
-#ifndef PFM_HAVE_UTYPES
-typedef uint8_t u8;             ///< unsigned 8-bit integer
-typedef uint16_t u16;           ///< unsigned 16-bit integer
-typedef uint32_t u32;           ///< unsigned 32-bit integer
+class Exception {
+ public:
+    explicit Exception(ErrorCode err): err(err), _message(nullptr) {}
+    explicit Exception(ErrorCode err, const char *message):
+        err(err), _message(message) {}
 
-typedef int8_t s8;              ///< signed 8-bit integer
-typedef int16_t s16;            ///< signed 16-bit integer
-typedef int32_t s32;            ///< signed 32-bit integer
-#endif
+    const char *what() const {
+        return getErrorString(err);
+    }
 
-#ifndef PFM_HAVE_UTYPES_64
-typedef uint64_t u64;           ///< unsigned 64-bit integer
-typedef int64_t s64;            ///< signed 64-bit integer
-#endif
+    const char *message() const {
+        return _message;
+    }
 
-#ifndef ARRAY_LEN
-/// The length of array.
-#define ARRAY_LEN(x) (sizeof(x) / sizeof(*(x)))
-#endif /* ARRAY_LEN */
+ private:
+    ErrorCode err;
+    const char *_message;
+};
+
+}  // namespace common

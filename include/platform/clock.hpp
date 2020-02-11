@@ -21,15 +21,13 @@
 */
 #pragma once
 
-#include <common/error.hpp>
+#include <common/exception.hpp>
 #include <platform/type.hpp>
 
 /**
  * @file clock.hpp
  * @brief Platform clock interfaces
 */
-
-using common::ErrorCode;
 
 /// The length of clock format string("MM/DD/YYYY hh:mm:ss").
 #define CLOCK_FORMAT_STRING_LEN 20
@@ -86,9 +84,8 @@ class Clock {
      * 
      * @param timestamp is the time as the number of seconds since 1970-01-01 00:00 (UTC).
      * @param src is the time source.
-     * @return the error code.
     */
-    ErrorCode set(time_t timestamp, Source src);
+    void set(time_t timestamp, Source src);
 
     /**
      * @brief Get clock
@@ -102,11 +99,11 @@ class Clock {
      * @brief convert clock to "MM/DD/YYYY hh:mm:ss" format
      * @note str length is 20bytes
      * 
-     * @param str is the buf to store the format string.
+     * @param buf is the buf to store the format string.
      * @param len is the length of str.
-     * @return the error code.
+     * @return the format string.
     */
-    ErrorCode getFormat(char *str, size_t len);
+    const char *getFormat(char *buf, size_t len);
 
     /**
      * @brief Get clock (ms)

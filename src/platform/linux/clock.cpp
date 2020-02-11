@@ -43,25 +43,27 @@ Clock::~Clock() {
     delete priv;
 }
 
-ErrorCode Clock::set(time_t timestamp, Source src) {
-    ErrorCode err = common::ERR_OK;
+void Clock::set(time_t timestamp, Source src) {
     struct timeval now;
 
     priv->mutex.lock();
     if (src < this->src || src >= CS_LIMIT) {
-        err = common::ERR_INVAL_ARG;
-        goto exit;
+        priv->mutex.unlock();
+        throw common::Exception(common::ERR_INVAL_ARG,
+            "clock source is too low or out of range");
     }
 
     now.tv_sec = timestamp;
     now.tv_usec = 0;
     if (settimeofday(&now, nullptr)) {
-        err = common::ERR_ERR;
+        priv->mutex.unlock();
+        throw common::Exception(common::ERR_PERM,
+            "insufficient privilege to call settimeofday();"
+            "under Linux the CAP_SYS_TIME capability is required");
     }
+
     this->src = src;
-exit:
     priv->mutex.unlock();
-    return err;
 }
 
 time_t Clock::get(Source *src) const {
@@ -103,14 +105,16 @@ u64 Clock::getTotalMs() const {
     return ct;
 }
 
-ErrorCode Clock::getFormat(char *str, size_t len) {
+const char *Clock::getFormat(char *buf, size_t len) {
     struct timeval tv;
 
     ASSERT(len >= CLOCK_FORMAT_STRING_LEN);
 
     gettimeofday(&tv, nullptr);
-    return strftime(str, len, "%m/%d/%Y %H:%M:%S", localtime(&tv.tv_sec)) ?
-        common::ERR_OK : common::ERR_INVAL_ARG;
+    if (!strftime(buf, len, "%m/%d/%Y %H:%M:%S", localtime(&tv.tv_sec))) {
+        throw common::Exception(common::ERR_INVAL_ARG,
+            "the length of buffer is too small");
+    }
 }
 
 void Clock::resetSource() {
