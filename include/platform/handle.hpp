@@ -21,16 +21,19 @@
 */
 #pragma once
 
+#include <platform/type.hpp>
 #include <platform/args.hpp>
 
 /**
- * @file io.hpp
- * @brief Platform IO interfaces
+ * @file handle.hpp
+ * @brief Platform Handle interfaces
 */
 
 namespace platform {
 
-class IO {
+class HandlePriv;
+
+class Handle {
  public:
     enum FileNo {
         STDIN,
@@ -38,8 +41,31 @@ class IO {
         STDERR,
     };
 
-    static void printNo(int fileNo, const char *fmt, ...) ARGS_FORMAT(2, 3);
-    static void vprintNo(int fileNo, const char *fmt, va_list args);
+    enum Mode {
+        MO_WRITE = (1 << 0),
+        MO_READ = (1 << 1),
+        MO_CREAT = (1 << 2),
+        MO_TRUNC = (1 << 3),
+        MO_NOBLOCK = (1 << 4),
+    };
+
+    enum SeekMode {
+        SEEK_MO_SET,
+        SEEK_MO_END,
+        SEEK_MO_CUR,
+    };
+
+    static void printNo(FileNo fileNo, const char *fmt, ...) ARGS_FORMAT(2, 3);
+    static void vprintNo(FileNo fileNo, const char *fmt, va_list args);
+
+    explicit Handle(const char *path, int mode);
+
+    size_t write(const void *buf, size_t len);
+    size_t read(void *buf, size_t len);
+    void seek(SeekMode mode, ssize_t len);
+
+ private:
+    HandlePriv *priv;
 };
 
 }  // namespace platform

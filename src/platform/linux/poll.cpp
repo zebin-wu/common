@@ -19,39 +19,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#include <cstdio>
-#include <platform/args.hpp>
-#include <platform/io.hpp>
+#include <platform/poll.hpp>
 
 namespace platform {
 
-static FILE *getFileStream(int fileNo) {
-    switch (fileNo) {
-    case IO::STDIN:
-        return stdin;
-        break;
-    case IO::STDOUT:
-        return stdout;
-        break;
-    case IO::STDERR:
-        return stderr;
-        break;
-    default:
-        break;
-    }
-    return nullptr;
+void Poll::add(Handle *handle, PollMode mode, cb_t cb, void *arg) {
+
 }
 
-void IO::printNo(int fileNo, const char *fmt, ...) {
-    va_list ap;
+void Poll::mod(Handle *handle, PollMode mode, cb_t cb, void *arg) {
 
-    va_start(ap, fmt);
-    vfprintf(getFileStream(fileNo), fmt, ap);
-    va_end(ap);
 }
 
-void IO::vprintNo(int fileNo, const char *fmt, va_list args) {
-    vfprintf(getFileStream(fileNo), fmt, args);
+void Poll::del(Handle *handle) {
+
 }
+
+void Poll::wait(u32 ms) {
+
+}
+
+};
 
 }  // namespace platform

@@ -21,7 +21,7 @@
 */
 #include <common/log.hpp>
 #include <platform/args.hpp>
-#include <platform/io.hpp>
+#include <platform/handle.hpp>
 #include <platform/lock.hpp>
 #include <platform/clock.hpp>
 
@@ -31,9 +31,9 @@ class LogPriv {
  public:
     LogPriv(): level(Log::LOG_WARN) {}
 
-    platform::IO::FileNo getFileNo() const {
+    platform::Handle::FileNo getFileNo() const {
         return level <= Log::LOG_WARN ?
-            platform::IO::STDERR : platform::IO::STDOUT;
+            platform::Handle::STDERR : platform::Handle::STDOUT;
     }
 
     Log::Level level;
@@ -62,18 +62,18 @@ static const char *getLogLevelString(Log::Level level) {
 
 void Log::put(Level level, const char *fmt, ...) {
     va_list ap;
-    int fileNo;
+    platform::Handle::FileNo fileNo;
     char clock_str[CLOCK_FORMAT_STRING_LEN];
 
     if (level <= logPriv.level) {
         fileNo = logPriv.getFileNo();
         platform::Clock::Instance().getFormat(clock_str, sizeof(clock_str));
-        platform::IO::printNo(fileNo, "[%s] %s ",
+        platform::Handle::printNo(fileNo, "[%s] %s ",
             getLogLevelString(level), clock_str);
         va_start(ap, fmt);
-        platform::IO::vprintNo(fileNo, fmt, ap);
+        platform::Handle::vprintNo(fileNo, fmt, ap);
         va_end(ap);
-        platform::IO::printNo(fileNo, "\n");
+        platform::Handle::printNo(fileNo, "\n");
     }
 }
 
