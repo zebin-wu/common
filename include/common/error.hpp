@@ -39,6 +39,9 @@ enum ErrorCode {
     ERR_BUSY,           ///< another operation is in progress
     ERR_INVAL_ARG,      ///< invalid arg
     ERR_PERM,           ///< operation not permitted
+    ERR_EXIST,          ///< something exists
+    ERR_NOENT,          ///< no such something
+    ERR_OVER_RANGE,     ///< over the range
 };
 
 /**

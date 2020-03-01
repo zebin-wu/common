@@ -37,6 +37,9 @@ static const char *error_str_array[] = {
     "busy",
     "invalid arguments",
     "operation not permitted",
+    "something exists",
+    "no such something",
+    "over the range",
 };
 
 const char *getErrorString(ErrorCode err) {
