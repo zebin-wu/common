@@ -21,6 +21,7 @@
 */
 #pragma once
 
+#include <common/exception.hpp>
 #include <platform/type.hpp>
 #include <platform/args.hpp>
 
@@ -59,13 +60,26 @@ class Handle {
     static void vprintNo(FileNo fileNo, const char *fmt, va_list args);
 
     explicit Handle(const char *path, int mode);
+    ~Handle();
 
+    int getFileNo();
     size_t write(const void *buf, size_t len);
     size_t read(void *buf, size_t len);
-    void seek(SeekMode mode, ssize_t len);
+    size_t seek(SeekMode mode, ssize_t len);
 
  private:
     HandlePriv *priv;
+};
+
+class HandleException: public common::Exception {
+ public:
+    explicit HandleException(Handle *handle, common::ErrorCode err):
+        Exception(err), handle(handle) {}
+    explicit HandleException(Handle *handle,
+        common::ErrorCode err, const char *message):
+        Exception(err, message), handle(handle) {}
+ private:
+    Handle *handle;
 };
 
 }  // namespace platform

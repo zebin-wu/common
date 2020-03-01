@@ -21,6 +21,7 @@
 */
 #pragma once
 
+#include <common/exception.hpp>
 #include <platform/handle.hpp>
 #include <platform/lock.hpp>
 
@@ -38,72 +39,40 @@ class Poll {
     enum PollMode {
         POLL_READ,
         POLL_WRITE,
+        POLL_ERR,
     };
 
-    Poll(): stateHead(nullptr), mutex(Lock::LOCK_MUTEX) {}
-
     typedef void (*cb_t)(Poll::PollMode mode, Handle *handle, void *arg);
-    typedef void (*exception_t)(Poll::PollMode mode, Handle *handle, void *arg);
 
-    void add(Handle *handle, PollMode mode, cb_t cb, void *arg) {
-        mutex.lock();
-        stateHead = new StateNode(mode, handle, cb, arg, stateHead);
-        mutex.unlock();
-        _add(stateHead);
-    }
+    Poll();
+    ~Poll();
 
-    void mod(Handle *handle, PollMode mode, cb_t cb, void *arg) {
-        StateNode *t = stateHead;
-        mutex.lock();
-        while (t) {
-            if (handle == t->handle) {
-                _mod(t);
-                break;
-            }
-            t = t->next;
-        }
-        mutex.unlock();
-    }
+    void add(Handle *handle, PollMode mode, cb_t cb, void *arg);
 
-    void del(Handle *handle) {
-        StateNode **t = &stateHead, *cur;
-        mutex.lock();
-        while (*t) {
-            cur = *t;
-            if (handle == cur->handle) {
-                _del(cur);
-                *t = cur->next;
-                delete cur;
-                break;
-            }
-            t = &cur->next;
-        }
-        mutex.unlock();
-    }
+    void mod(Handle *handle, PollMode mode, cb_t cb, void *arg);
 
-    void wait(u32 ms);
+    void del(Handle *handle, PollMode mode);
+
+    /**
+     * @brief It blocks the thread for the max_wait ms, and do the platform polling.
+     * 
+     * @param timeout specifies the maximum wait time in milliseconds(-1 == infinite)
+    */
+    void polling(int timeout);
+
  private:
-    class StateNode {
-     public:
-        explicit StateNode(PollMode mode, Handle *handle, cb_t cb, void *arg = nullptr, StateNode *next = nullptr):
-            mode(mode), handle(handle), cb(cb), arg(arg) {}
-
-        PollMode mode;
-        Handle *handle;                                                                                
-        cb_t cb;
-        void *arg;
-
-        StateNode *next;
-     private:
-        StateNode();
-    } *stateHead;
-
-    void _add(StateNode *state);
-    void _mod(StateNode *state);
-    void _del(StateNode *state);
-
     PollPriv *priv;
-    Lock mutex;
+};
+
+class PollException: public common::Exception {
+ public:
+    explicit PollException(Poll *poll, common::ErrorCode err):
+        Exception(err), poll(poll) {}
+    explicit PollException(Poll *poll,
+        common::ErrorCode err, const char *message):
+        Exception(err, message), poll(poll) {}
+ private:
+    Poll *poll;
 };
 
 }  // namespace platform
