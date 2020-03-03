@@ -26,10 +26,14 @@
 #include <platform/args.hpp>
 #include <platform/handle.hpp>
 
+/// The size of handle buffer
+#define PFM_HANDLE_BUF_SIZE 4096
+
 namespace platform {
 
 class HandlePriv {
  public:
+    HandlePriv(): fd(-1) {}
     int fd;
 };
 
@@ -56,33 +60,32 @@ static int getOpenFlag(int mode) {
     return flag;
 }
 
-static FILE *getFileStream(Handle::FileNo fileNo) {
-    switch (fileNo) {
-    case Handle::STDIN:
-        return stdin;
-        break;
-    case Handle::STDOUT:
-        return stdout;
-        break;
-    case Handle::STDERR:
-        return stderr;
-        break;
-    default:
-        break;
-    }
-    return nullptr;
-}
-
-void Handle::printNo(FileNo fileNo, const char *fmt, ...) {
+void Handle::print(const char *fmt, ...) {
     va_list ap;
+    int size;
+    char buf[PFM_HANDLE_BUF_SIZE];
 
     va_start(ap, fmt);
-    vfprintf(getFileStream(fileNo), fmt, ap);
+    size = vsnprintf(buf, sizeof(buf), fmt, ap);
+    if (size <= 0) {
+        throw HandleException(this, common::ERR_ERR);
+        goto end;
+    }
+    write(buf, size);
+end:
     va_end(ap);
 }
 
-void Handle::vprintNo(FileNo fileNo, const char *fmt, va_list args) {
-    vfprintf(getFileStream(fileNo), fmt, args);
+void Handle::vprint(const char *fmt, va_list args) {
+    int size;
+    char buf[PFM_HANDLE_BUF_SIZE];
+
+    size = vsnprintf(buf, sizeof(buf), fmt, args);
+    if (size <= 0) {
+        throw HandleException(this, common::ERR_ERR);
+        return;
+    }
+    write(buf, size);
 }
 
 Handle::Handle(const char *path, int mode): priv(new HandlePriv) {
@@ -92,6 +95,8 @@ Handle::Handle(const char *path, int mode): priv(new HandlePriv) {
         throw HandleException(this, common::ERR_ERR);
     }
 }
+
+Handle::Handle(): priv(new HandlePriv) {}
 
 Handle::~Handle() {
     close(priv->fd);
@@ -142,6 +147,24 @@ size_t Handle::seek(SeekMode mode, ssize_t len) {
         return 0;
     }
     return static_cast<size_t>(ret);
+}
+
+Handle *Handle::in() {
+    static Handle *inHandle = new Handle;
+    inHandle->priv->fd = STDIN_FILENO;
+    return inHandle;
+}
+
+Handle *Handle::out() {
+    static Handle *outHandle = new Handle;
+    outHandle->priv->fd = STDOUT_FILENO;
+    return outHandle;
+}
+
+Handle *Handle::err() {
+    static Handle *errHandle = new Handle;
+    errHandle->priv->fd = STDERR_FILENO;
+    return errHandle;
 }
 
 }  // namespace platform

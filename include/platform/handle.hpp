@@ -36,12 +36,6 @@ class HandlePriv;
 
 class Handle {
  public:
-    enum FileNo {
-        STDIN,
-        STDOUT,
-        STDERR,
-    };
-
     enum Mode {
         MO_WRITE = (1 << 0),
         MO_READ = (1 << 1),
@@ -56,9 +50,6 @@ class Handle {
         SEEK_MO_CUR,
     };
 
-    static void printNo(FileNo fileNo, const char *fmt, ...) ARGS_FORMAT(2, 3);
-    static void vprintNo(FileNo fileNo, const char *fmt, va_list args);
-
     explicit Handle(const char *path, int mode);
     ~Handle();
 
@@ -67,7 +58,15 @@ class Handle {
     size_t read(void *buf, size_t len);
     size_t seek(SeekMode mode, ssize_t len);
 
+    void print(const char *fmt, ...) ARGS_FORMAT(2, 3);
+    void vprint(const char *fmt, va_list args);
+
+    static Handle *in();
+    static Handle *out();
+    static Handle *err();
+
  private:
+    Handle();
     HandlePriv *priv;
 };
 
