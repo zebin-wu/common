@@ -26,6 +26,7 @@
 #include <common/assert.hpp>
 #include <platform/poll.hpp>
 #include <platform/lock.hpp>
+#include <platform/handle_int.hpp>
 
 #define PFM_EPOLL_FD_MAX 1024
 #define PFM_EPOLL_MAX_LISTEN 64
@@ -172,7 +173,7 @@ void Poll::add(Handle *handle, PollMode mode, cb_t cb,  void *arg) {
     }
     epevt.events |= getEpollEvent(mode);
     epevt.data.ptr = static_cast<void *>(state);
-    ret = epoll_ctl(priv->epfd, epopt, handle->getFileNo(), &epevt);
+    ret = epoll_ctl(priv->epfd, epopt, handle->priv->getFd(), &epevt);
     if (ret < 0) {
         if (epopt == EPOLL_CTL_ADD) {
             delete state;
@@ -250,7 +251,7 @@ void Poll::del(Handle *handle, PollMode mode) {
             " the handle is not added");
     }
     epevt.data.ptr = static_cast<void *>(state);
-    ret = epoll_ctl(priv->epfd, epopt, handle->getFileNo(),
+    ret = epoll_ctl(priv->epfd, epopt, handle->priv->getFd(),
         epopt == EPOLL_CTL_MOD ? &epevt : nullptr);
     if (ret < 0) {
         epollCtlExcept(epopt, errno, this);

@@ -53,7 +53,6 @@ class Handle {
     explicit Handle(const char *path, int mode);
     ~Handle();
 
-    int getFileNo();
     size_t write(const void *buf, size_t len);
     size_t read(void *buf, size_t len);
     size_t seek(SeekMode mode, ssize_t len);
@@ -66,6 +65,7 @@ class Handle {
     static Handle *err();
 
  private:
+    friend class Poll;
     Handle();
     HandlePriv *priv;
 };
@@ -77,6 +77,8 @@ class HandleException: public common::Exception {
     explicit HandleException(Handle *handle,
         common::ErrorCode err, const char *message):
         Exception(err, message), handle(handle) {}
+
+    Handle *getHandle() const { return handle; }
  private:
     Handle *handle;
 };

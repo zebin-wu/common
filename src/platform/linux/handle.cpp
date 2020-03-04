@@ -25,17 +25,12 @@
 #include <common/assert.hpp>
 #include <platform/args.hpp>
 #include <platform/handle.hpp>
+#include <platform/handle_int.hpp>
 
 /// The size of handle buffer
 #define PFM_HANDLE_BUF_SIZE 4096
 
 namespace platform {
-
-class HandlePriv {
- public:
-    HandlePriv(): fd(-1) {}
-    int fd;
-};
 
 static int getOpenFlag(int mode) {
     int flag = 0;
@@ -90,26 +85,24 @@ void Handle::vprint(const char *fmt, va_list args) {
 
 Handle::Handle(const char *path, int mode): priv(new HandlePriv) {
     ASSERT(path);
-    priv->fd = open(path, getOpenFlag(mode), 0664);
-    if (priv->fd < 0) {
+    int fd = open(path, getOpenFlag(mode), 0664);
+    if (fd < 0) {
         throw HandleException(this, common::ERR_ERR);
+        return;
     }
+    priv->setFd(fd);
 }
 
 Handle::Handle(): priv(new HandlePriv) {}
 
 Handle::~Handle() {
-    close(priv->fd);
+    close(priv->getFd());
     delete priv;
-}
-
-int Handle::getFileNo() {
-    return priv->fd;
 }
 
 size_t Handle::write(const void *buf, size_t len) {
     ssize_t wlen;
-    wlen = ::write(priv->fd, buf, len);
+    wlen = ::write(priv->getFd(), buf, len);
     if (wlen <= 0) {
         throw HandleException(this, common::ERR_ERR);
         return 0;
@@ -119,7 +112,7 @@ size_t Handle::write(const void *buf, size_t len) {
 
 size_t Handle::read(void *buf, size_t len) {
     ssize_t rlen;
-    rlen = ::read(priv->fd, buf, len);
+    rlen = ::read(priv->getFd(), buf, len);
     if (rlen <= 0) {
         throw HandleException(this, common::ERR_ERR);
         return 0;
@@ -141,7 +134,7 @@ size_t Handle::seek(SeekMode mode, ssize_t len) {
         whence = SEEK_MO_END;
         break;
     }
-    ret = ::lseek(priv->fd, len, whence);
+    ret = ::lseek(priv->getFd(), len, whence);
     if (ret < 0) {
         throw HandleException(this, common::ERR_ERR);
         return 0;
@@ -151,19 +144,19 @@ size_t Handle::seek(SeekMode mode, ssize_t len) {
 
 Handle *Handle::in() {
     static Handle *inHandle = new Handle;
-    inHandle->priv->fd = STDIN_FILENO;
+    inHandle->priv->setFd(STDIN_FILENO);
     return inHandle;
 }
 
 Handle *Handle::out() {
     static Handle *outHandle = new Handle;
-    outHandle->priv->fd = STDOUT_FILENO;
+    outHandle->priv->setFd(STDOUT_FILENO);
     return outHandle;
 }
 
 Handle *Handle::err() {
     static Handle *errHandle = new Handle;
-    errHandle->priv->fd = STDERR_FILENO;
+    errHandle->priv->setFd(STDERR_FILENO);
     return errHandle;
 }
 
