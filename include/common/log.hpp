@@ -22,6 +22,7 @@
 #pragma once
 
 #include <platform/args.hpp>
+#include <platform/config.hpp>
 #include <common/error.hpp>
 
 /**
@@ -79,7 +80,14 @@ class Log {
         common::Log::put(level, __VA_ARGS__); \
     } while (0)
 
+#ifdef PFM_DEBUG
 #define log_err(...)   log_put(common::Log::LOG_ERR, __VA_ARGS__)
 #define log_warn(...)  log_put(common::Log::LOG_WARN, __VA_ARGS__)
 #define log_info(...)  log_put(common::Log::LOG_INFO, __VA_ARGS__)
 #define log_debug(...) log_put(common::Log::LOG_DEBUG, __VA_ARGS__)
+#else  // PFM_DEBUG
+#define log_err(...)   do {} while (0);
+#define log_warn(...)  do {} while (0);
+#define log_info(...)  do {} while (0);
+#define log_debug(...) do {} while (0);
+#endif  // PFM_DEBUG

@@ -30,7 +30,8 @@
 
 namespace platform {
 
-class LockPriv;    /// Only used by Lock, need a platform to implement.
+/// Only used by class Lock, need a platform to implement.
+class LockPriv;
 
 class Lock {
  public:

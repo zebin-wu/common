@@ -23,11 +23,12 @@
 
 /**
  * @file assert.hpp
- * @brief Common assert interfaces
+ * @brief Common assert interfaces.
 */
 
 #include <platform/config.hpp>
 
+#ifdef PFM_DEBUG
 #ifdef PFM_SUPPORT_C_LIBRARY
 #include <cassert>
 #else  // PFM_SUPPORT_C_LIBRARY
@@ -49,3 +50,7 @@
         pfm_assert_handle(__FILE__, __LINE__, "", __func__); \
     } while (0)
 #endif  // PFM_SUPPORT_C_LIBRARY
+#else  // PFM_DEBUG
+#define ASSERT(expr)    do {} while (0);
+#define ASSERT_NOTREACHED() do {} while (0);
+#endif  // PFM_DEBUG

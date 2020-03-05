@@ -23,13 +23,13 @@
 
 /**
  * @file error.hpp
- * @brief Error code
+ * @brief Common error code
 */
 
 namespace common {
 
 /**
- * @enum error code
+ * @enum Error code.
 */
 enum ErrorCode {
     ERR_OK,             ///< no error

@@ -24,6 +24,7 @@
 #include <common/exception.hpp>
 #include <platform/type.hpp>
 #include <platform/args.hpp>
+#include <platform/config.hpp>
 
 /**
  * @file handle.hpp
@@ -32,10 +33,24 @@
 
 namespace platform {
 
+/// Only used by class Handle, need a platform to implement.
 class HandlePriv;
 
 class Handle {
  public:
+    static Handle *in();
+    static Handle *out();
+    static Handle *err();
+
+    ~Handle();
+
+    size_t write(const void *buf, size_t len);
+    size_t read(void *buf, size_t len);
+
+    void print(const char *fmt, ...) ARGS_FORMAT(2, 3);
+    void vprint(const char *fmt, va_list args);
+
+#ifdef PFM_SUPPORT_FILE_HANDLE
     enum Mode {
         MO_WRITE = (1 << 0),
         MO_READ = (1 << 1),
@@ -51,18 +66,8 @@ class Handle {
     };
 
     explicit Handle(const char *path, int mode);
-    ~Handle();
-
-    size_t write(const void *buf, size_t len);
-    size_t read(void *buf, size_t len);
     size_t seek(SeekMode mode, ssize_t len);
-
-    void print(const char *fmt, ...) ARGS_FORMAT(2, 3);
-    void vprint(const char *fmt, va_list args);
-
-    static Handle *in();
-    static Handle *out();
-    static Handle *err();
+#endif  // PFM_SUPPORT_FILE_HANDLE
 
  private:
     friend class Poll;

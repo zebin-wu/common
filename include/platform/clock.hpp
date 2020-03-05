@@ -37,7 +37,8 @@
 
 namespace platform {
 
-class ClockPriv;    /// Only used by Clock, need a platform to implement.
+/// Only used by class Clock, need a platform to implement.
+class ClockPriv;
 
 class Clock {
  public:
