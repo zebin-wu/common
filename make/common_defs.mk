@@ -30,7 +30,7 @@
 # $3: Extra link switchs
 #
 define METHOD_LD
-	echo 'LINK $(notdir $1)';\
+	echo 'LINK	$(notdir $1)';\
 	    $(CXX) -o $1 $(2:%.cpp=$(BUILD_DIR)/%.o) $3 $(LDFLAGS)
 
 -include $(2:%.cpp=$(BUILD_DIR)/%.d)
@@ -43,7 +43,7 @@ endef
 # $2: Source files
 #
 define METHOD_AR
-	echo 'AR $(notdir $1)';\
+	echo 'AR	$(notdir $1)';\
 	    $(AR) cr $1 $(2:%.cpp=$(BUILD_DIR)/%.o)
 endef
 

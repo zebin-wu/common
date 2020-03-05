@@ -22,15 +22,40 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstdio>
+#include <cerrno>
 #include <common/assert.hpp>
 #include <platform/args.hpp>
 #include <platform/handle.hpp>
 #include <platform/handle_int.hpp>
+#include <platform/error.hpp>
 
 /// The size of handle buffer
 #define PFM_HANDLE_BUF_SIZE 4096
 
 namespace platform {
+
+static const ErrorDesc openErrDescs[] = {
+    {EACCES, common::ERR_PERM,
+        "the requested access to the handle is not allowed"},
+    {EDQUOT, common::ERR_DQUOT,
+        "when MO_CREAT is specified, the file does not exist"},
+    {EFAULT, common::ERR_ERR,
+        "handle points outside your accessible address space"},
+    {EINTR, common::ERR_BUSY,
+        "while blocked waiting to complete an open of a slow "
+        "device(e.g., a FIFO), the call was interrupted by a signal  handler"},
+    {EINVAL, common::ERR_INVAL_ARG},
+    {ENOENT, common::ERR_NOENT, "the handle does not exist"},
+};
+
+static const ErrorDesc rwErrDescs[] = {
+    {EAGAIN, common::ERR_AGAIN,
+        "the handle has been marked nonblocking, try again"},
+    {EINVAL, common::ERR_INVAL_ARG},
+    {EFAULT, common::ERR_OVER_RANGE,
+        "buf is outside your accessible address space"},
+    {EINTR, common::ERR_INTR, "The call was interrupted by a signal"},
+};
 
 static int getOpenFlag(int mode) {
     int flag = 0;
@@ -87,24 +112,28 @@ Handle::Handle(const char *path, int mode): priv(new HandlePriv) {
     ASSERT(path);
     int fd = open(path, getOpenFlag(mode), 0664);
     if (fd < 0) {
-        throw HandleException(this, common::ERR_ERR);
+        const ErrorDesc *desc = getErrorDesc(errno,
+            openErrDescs, ARRAY_LEN(openErrDescs));
+        throw HandleException(this, desc->err, desc->msg);
         return;
     }
-    priv->setFd(fd);
+    priv->fd = fd;
 }
 
 Handle::Handle(): priv(new HandlePriv) {}
 
 Handle::~Handle() {
-    close(priv->getFd());
+    close(priv->fd);
     delete priv;
 }
 
 size_t Handle::write(const void *buf, size_t len) {
     ssize_t wlen;
-    wlen = ::write(priv->getFd(), buf, len);
+    wlen = ::write(priv->fd, buf, len);
     if (wlen <= 0) {
-        throw HandleException(this, common::ERR_ERR);
+        const ErrorDesc *desc = getErrorDesc(errno,
+            rwErrDescs, ARRAY_LEN(rwErrDescs));
+        throw HandleException(this, desc->err, desc->msg);
         return 0;
     }
     return static_cast<size_t>(wlen);
@@ -112,9 +141,11 @@ size_t Handle::write(const void *buf, size_t len) {
 
 size_t Handle::read(void *buf, size_t len) {
     ssize_t rlen;
-    rlen = ::read(priv->getFd(), buf, len);
+    rlen = ::read(priv->fd, buf, len);
     if (rlen <= 0) {
-        throw HandleException(this, common::ERR_ERR);
+        const ErrorDesc *desc = getErrorDesc(errno,
+            rwErrDescs, ARRAY_LEN(rwErrDescs));
+        throw HandleException(this, desc->err, desc->msg);
         return 0;
     }
     return static_cast<size_t>(rlen);
@@ -134,7 +165,7 @@ size_t Handle::seek(SeekMode mode, ssize_t len) {
         whence = SEEK_MO_END;
         break;
     }
-    ret = ::lseek(priv->getFd(), len, whence);
+    ret = ::lseek(priv->fd, len, whence);
     if (ret < 0) {
         throw HandleException(this, common::ERR_ERR);
         return 0;
@@ -144,19 +175,19 @@ size_t Handle::seek(SeekMode mode, ssize_t len) {
 
 Handle *Handle::in() {
     static Handle *inHandle = new Handle;
-    inHandle->priv->setFd(STDIN_FILENO);
+    inHandle->priv->fd = STDIN_FILENO;
     return inHandle;
 }
 
 Handle *Handle::out() {
     static Handle *outHandle = new Handle;
-    outHandle->priv->setFd(STDOUT_FILENO);
+    outHandle->priv->fd = STDOUT_FILENO;
     return outHandle;
 }
 
 Handle *Handle::err() {
     static Handle *errHandle = new Handle;
-    errHandle->priv->setFd(STDERR_FILENO);
+    errHandle->priv->fd = STDERR_FILENO;
     return errHandle;
 }
 

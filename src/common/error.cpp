@@ -40,6 +40,9 @@ static const char *error_str_array[] = {
     "something exists",
     "no such something",
     "over the range",
+    "quota exceeded",
+    "try again",
+    "was interrupted",
 };
 
 const char *getErrorString(ErrorCode err) {

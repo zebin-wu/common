@@ -25,13 +25,13 @@
 #
 # Common target
 #
-common: cppstyle $(LIBCOMMON_NAME)
+common: cppstyle $(LIBCOMMON_DYNAMIC) $(LIBCOMMON_STATIC)
 
 #
 # CPP style macros
 #
 BUILD_CPPSTYLE_DIR ?= $(BUILD_DIR)/cppstyle
-CPPSTYLE ?= cpplint
+CPPSTYLE ?= cpplint --quiet
 CPPSTYLE_INCLUDES := $(filter-out include, $(foreach dir, $(INCLUDES), $(shell find $(dir) -maxdepth 1 -type d)))
 CPPSTYLE_HEADERS := $(foreach dir, $(CPPSTYLE_INCLUDES), $(wildcard $(dir)/*.hpp))
 CPPSTYLE_SOURCES := $(SOURCES)
@@ -55,13 +55,8 @@ cppstyle: $(CPPSTYLE_TARGETS)
 # Rule for each file to be checked
 #
 $(CPPSTYLE_TARGETS):$(BUILD_CPPSTYLE_DIR)/%.cs:%
-	$(QUIET)echo CPPSTYLE $<;\
+	$(QUIET)echo 'CHECK	$<';\
 	    $(CPPSTYLE) $< && (mkdir -p $(dir $@); touch $@)
-
-#
-# Rule to build $(LIBCOMMON_NAME)
-#
-$(LIBCOMMON_NAME): $(LIBCOMMON_DYNAMIC) $(LIBCOMMON_STATIC)
 
 #
 # Rule to build common dynamic library
@@ -80,14 +75,14 @@ $(eval $(call BUILD_TARGET_RULES, $(LIBCOMMON_STATIC), METHOD_AR,\
 # Rule to compile source code
 #
 $(BUILD_DIR)/%.o: %.cpp
-	$(QUIET)echo 'CXX $<';\
+	$(QUIET)echo 'CXX	$<';\
 	    mkdir -p $(dir $@); $(CXX) $(CPPFLAGS) -c -o $@ $<
 
 #
 # Rule to make dependencies files
 #
 $(BUILD_DIR)/%.d: %.cpp Makefile
-	$(QUIET)echo "DEP $<";\
+	$(QUIET)echo 'DEP	$<';\
 		(mkdir -p $(dir $@); $(CXX) -MM $(CPPFLAGS) $< | \
 		sed 's,.*\.o[ :]*,$(@:%.d=%.o) $@: ,g' > $@) || rm -f $@
 

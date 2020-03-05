@@ -21,18 +21,32 @@
 */
 #pragma once
 
+#include <common/error.hpp>
+
 /**
- * @file handle_int.hpp
- * @brief Platform Linux Handle interfaces
+ * @file errno.hpp
+ * @brief Change the system error number to common::ErrorCode
 */
 
 namespace platform {
 
-class HandlePriv {
- public:
-    HandlePriv(): fd(-1) {}
-
-    int fd;
+/**
+ * @brief Used to describe the error when it occurs
+*/
+struct ErrorDesc {
+    int sys_err;    ///< system call error number
+    common::ErrorCode err;  ///< common error code
+    const char *msg;    ///< error message
 };
+
+static const ErrorDesc *getErrorDesc(int err,
+    const ErrorDesc *descs, int len) {
+    for (int i = 0; i < len; i++) {
+        if (descs[i].sys_err == err) {
+            return &descs[i];
+        }
+    }
+    return nullptr;
+}
 
 }  // namespace platform
