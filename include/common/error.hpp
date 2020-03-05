@@ -42,6 +42,9 @@ enum ErrorCode {
     ERR_EXIST,          ///< something exists
     ERR_NOENT,          ///< no such something
     ERR_OVER_RANGE,     ///< over the range
+    ERR_DQUOT,          ///< quota exceeded
+    ERR_AGAIN,          ///< try again
+    ERR_INTR,           ///< was interrupted
 };
 
 /**

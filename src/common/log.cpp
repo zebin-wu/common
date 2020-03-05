@@ -29,14 +29,20 @@ namespace common {
 
 class LogPriv {
  public:
-    LogPriv(): level(Log::LOG_WARN) {}
+    LogPriv(): level(Log::LOG_WARN) {
+        handle = getHandle(level);
+    }
 
-    platform::Handle::FileNo getFileNo() const {
-        return level <= Log::LOG_WARN ?
-            platform::Handle::STDERR : platform::Handle::STDOUT;
+    platform::Handle *getHandle(Log::Level level) {
+        if (level > Log::LOG_NONE &&
+            level <= Log::LOG_WARN) {
+            return platform::Handle::err();
+        }
+        return platform::Handle::out();
     }
 
     Log::Level level;
+    platform::Handle *handle;
     platform::Lock lock;
 };
 
@@ -62,18 +68,17 @@ static const char *getLogLevelString(Log::Level level) {
 
 void Log::put(Level level, const char *fmt, ...) {
     va_list ap;
-    platform::Handle::FileNo fileNo;
     char clock_str[CLOCK_FORMAT_STRING_LEN];
+    platform::Handle *handle = logPriv.handle;
 
     if (level <= logPriv.level) {
-        fileNo = logPriv.getFileNo();
         platform::Clock::Instance().getFormat(clock_str, sizeof(clock_str));
-        platform::Handle::printNo(fileNo, "[%s] %s ",
+        handle->print("[%s] %s ",
             getLogLevelString(level), clock_str);
         va_start(ap, fmt);
-        platform::Handle::vprintNo(fileNo, fmt, ap);
+        handle->vprint(fmt, ap);
         va_end(ap);
-        platform::Handle::printNo(fileNo, "\n");
+        handle->print("\n");
     }
 }
 
@@ -84,6 +89,7 @@ Log::Level Log::getLevel() {
 void Log::setLevel(Level level) {
     logPriv.lock.lock();
     logPriv.level = level;
+    logPriv.handle = logPriv.getHandle(level);
     logPriv.lock.unlock();
 }
 

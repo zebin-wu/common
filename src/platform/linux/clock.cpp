@@ -114,7 +114,9 @@ const char *Clock::getFormat(char *buf, size_t len) {
     if (!strftime(buf, len, "%m/%d/%Y %H:%M:%S", localtime(&tv.tv_sec))) {
         throw common::Exception(common::ERR_INVAL_ARG,
             "the length of buffer is too small");
+        return NULL;
     }
+    return buf;
 }
 
 void Clock::resetSource() {

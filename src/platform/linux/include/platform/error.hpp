@@ -19,35 +19,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#include <common/error.hpp>
-#include <common/assert.hpp>
-#include <platform/type.hpp>
+#pragma once
 
-namespace common {
+#include <common/error.hpp>
 
 /**
- * Initializer for error strings array.
- * Keep this in sync with the enum al_err definition.
- */
-static const char *error_str_array[] = {
-    "none",
-    "error",
-    "memory error",
-    "idle",
-    "busy",
-    "invalid arguments",
-    "operation not permitted",
-    "something exists",
-    "no such something",
-    "over the range",
-    "quota exceeded",
-    "try again",
-    "was interrupted",
+ * @file errno.hpp
+ * @brief Change the system error number to common::ErrorCode
+*/
+
+namespace platform {
+
+/**
+ * @brief Used to describe the error when it occurs
+*/
+struct ErrorDesc {
+    int sys_err;    ///< system call error number
+    common::ErrorCode err;  ///< common error code
+    const char *msg;    ///< error message
 };
 
-const char *getErrorString(ErrorCode err) {
-    ASSERT(err >= 0 && err < ARRAY_LEN(error_str_array));
-    return error_str_array[err];
+static const ErrorDesc *getErrorDesc(int err,
+    const ErrorDesc *descs, int len) {
+    for (int i = 0; i < len; i++) {
+        if (descs[i].sys_err == err) {
+            return &descs[i];
+        }
+    }
+    return nullptr;
 }
 
-}  // namespace common
+}  // namespace platform

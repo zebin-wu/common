@@ -22,15 +22,39 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstdio>
+#include <cerrno>
 #include <common/assert.hpp>
 #include <platform/args.hpp>
 #include <platform/handle.hpp>
+#include <platform/handle_int.hpp>
+#include <platform/error.hpp>
+
+/// The size of handle buffer
+#define PFM_HANDLE_BUF_SIZE 4096
 
 namespace platform {
 
-class HandlePriv {
- public:
-    int fd;
+static const ErrorDesc openErrDescs[] = {
+    {EACCES, common::ERR_PERM,
+        "the requested access to the handle is not allowed"},
+    {EDQUOT, common::ERR_DQUOT,
+        "when MO_CREAT is specified, the file does not exist"},
+    {EFAULT, common::ERR_ERR,
+        "handle points outside your accessible address space"},
+    {EINTR, common::ERR_BUSY,
+        "while blocked waiting to complete an open of a slow "
+        "device(e.g., a FIFO), the call was interrupted by a signal  handler"},
+    {EINVAL, common::ERR_INVAL_ARG},
+    {ENOENT, common::ERR_NOENT, "the handle does not exist"},
+};
+
+static const ErrorDesc rwErrDescs[] = {
+    {EAGAIN, common::ERR_AGAIN,
+        "the handle has been marked nonblocking, try again"},
+    {EINVAL, common::ERR_INVAL_ARG},
+    {EFAULT, common::ERR_OVER_RANGE,
+        "buf is outside your accessible address space"},
+    {EINTR, common::ERR_INTR, "The call was interrupted by a signal"},
 };
 
 static int getOpenFlag(int mode) {
@@ -56,57 +80,60 @@ static int getOpenFlag(int mode) {
     return flag;
 }
 
-static FILE *getFileStream(Handle::FileNo fileNo) {
-    switch (fileNo) {
-    case Handle::STDIN:
-        return stdin;
-        break;
-    case Handle::STDOUT:
-        return stdout;
-        break;
-    case Handle::STDERR:
-        return stderr;
-        break;
-    default:
-        break;
-    }
-    return nullptr;
-}
-
-void Handle::printNo(FileNo fileNo, const char *fmt, ...) {
+void Handle::print(const char *fmt, ...) {
     va_list ap;
+    int size;
+    char buf[PFM_HANDLE_BUF_SIZE];
 
     va_start(ap, fmt);
-    vfprintf(getFileStream(fileNo), fmt, ap);
+    size = vsnprintf(buf, sizeof(buf), fmt, ap);
+    if (size <= 0) {
+        throw HandleException(this, common::ERR_ERR);
+        goto end;
+    }
+    write(buf, size);
+end:
     va_end(ap);
 }
 
-void Handle::vprintNo(FileNo fileNo, const char *fmt, va_list args) {
-    vfprintf(getFileStream(fileNo), fmt, args);
+void Handle::vprint(const char *fmt, va_list args) {
+    int size;
+    char buf[PFM_HANDLE_BUF_SIZE];
+
+    size = vsnprintf(buf, sizeof(buf), fmt, args);
+    if (size <= 0) {
+        throw HandleException(this, common::ERR_ERR);
+        return;
+    }
+    write(buf, size);
 }
 
 Handle::Handle(const char *path, int mode): priv(new HandlePriv) {
     ASSERT(path);
-    priv->fd = open(path, getOpenFlag(mode), 0664);
-    if (priv->fd < 0) {
-        throw HandleException(this, common::ERR_ERR);
+    int fd = open(path, getOpenFlag(mode), 0664);
+    if (fd < 0) {
+        const ErrorDesc *desc = getErrorDesc(errno,
+            openErrDescs, ARRAY_LEN(openErrDescs));
+        throw HandleException(this, desc->err, desc->msg);
+        return;
     }
+    priv->fd = fd;
 }
+
+Handle::Handle(): priv(new HandlePriv) {}
 
 Handle::~Handle() {
     close(priv->fd);
     delete priv;
 }
 
-int Handle::getFileNo() {
-    return priv->fd;
-}
-
 size_t Handle::write(const void *buf, size_t len) {
     ssize_t wlen;
     wlen = ::write(priv->fd, buf, len);
     if (wlen <= 0) {
-        throw HandleException(this, common::ERR_ERR);
+        const ErrorDesc *desc = getErrorDesc(errno,
+            rwErrDescs, ARRAY_LEN(rwErrDescs));
+        throw HandleException(this, desc->err, desc->msg);
         return 0;
     }
     return static_cast<size_t>(wlen);
@@ -116,7 +143,9 @@ size_t Handle::read(void *buf, size_t len) {
     ssize_t rlen;
     rlen = ::read(priv->fd, buf, len);
     if (rlen <= 0) {
-        throw HandleException(this, common::ERR_ERR);
+        const ErrorDesc *desc = getErrorDesc(errno,
+            rwErrDescs, ARRAY_LEN(rwErrDescs));
+        throw HandleException(this, desc->err, desc->msg);
         return 0;
     }
     return static_cast<size_t>(rlen);
@@ -142,6 +171,24 @@ size_t Handle::seek(SeekMode mode, ssize_t len) {
         return 0;
     }
     return static_cast<size_t>(ret);
+}
+
+Handle *Handle::in() {
+    static Handle *inHandle = new Handle;
+    inHandle->priv->fd = STDIN_FILENO;
+    return inHandle;
+}
+
+Handle *Handle::out() {
+    static Handle *outHandle = new Handle;
+    outHandle->priv->fd = STDOUT_FILENO;
+    return outHandle;
+}
+
+Handle *Handle::err() {
+    static Handle *errHandle = new Handle;
+    errHandle->priv->fd = STDERR_FILENO;
+    return errHandle;
 }
 
 }  // namespace platform

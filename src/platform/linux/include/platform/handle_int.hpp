@@ -19,35 +19,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#include <common/error.hpp>
-#include <common/assert.hpp>
-#include <platform/type.hpp>
-
-namespace common {
+#pragma once
 
 /**
- * Initializer for error strings array.
- * Keep this in sync with the enum al_err definition.
- */
-static const char *error_str_array[] = {
-    "none",
-    "error",
-    "memory error",
-    "idle",
-    "busy",
-    "invalid arguments",
-    "operation not permitted",
-    "something exists",
-    "no such something",
-    "over the range",
-    "quota exceeded",
-    "try again",
-    "was interrupted",
+ * @file handle_int.hpp
+ * @brief Platform Linux Handle interfaces
+*/
+
+namespace platform {
+
+class HandlePriv {
+ public:
+    HandlePriv(): fd(-1) {}
+
+    int fd;
 };
 
-const char *getErrorString(ErrorCode err) {
-    ASSERT(err >= 0 && err < ARRAY_LEN(error_str_array));
-    return error_str_array[err];
-}
-
-}  // namespace common
+}  // namespace platform

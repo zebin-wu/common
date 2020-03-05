@@ -26,6 +26,8 @@
 #include <common/assert.hpp>
 #include <platform/poll.hpp>
 #include <platform/lock.hpp>
+#include <platform/handle_int.hpp>
+#include <platform/error.hpp>
 
 #define PFM_EPOLL_FD_MAX 1024
 #define PFM_EPOLL_MAX_LISTEN 64
@@ -34,25 +36,19 @@ namespace platform {
 
 class HandleState;
 
-struct EpollCtlErrDesc {
-    int epollErr;
-    common::ErrorCode err;
-    const char *msg;
-};
-
-static const EpollCtlErrDesc epollCtlCommonErrDescs[] = {
+static const ErrorDesc epollCtlCommonErrDescs[] = {
     {EBADF, common::ERR_INVAL_ARG, "the handle is invalid"},
     {EINVAL, common::ERR_INVAL_ARG, "epoll_ctl() has invalid arguments"},
     {ENOMEM, common::ERR_MEM, NULL},
     {EPERM, common::ERR_PERM, "the handle does not support poll"},
 };
 
-static const EpollCtlErrDesc epollCtlAddErrDescs[] = {
+static const ErrorDesc epollCtlAddErrDescs[] = {
     {EEXIST, common::ERR_EXIST, "the handle is added"},
     {ENOSPC, common::ERR_INVAL_ARG, "counld not watch too many handle"},
 };
 
-static const EpollCtlErrDesc epollCtlModErrDescs[] = {
+static const ErrorDesc epollCtlModErrDescs[] = {
     {ENOENT, common::ERR_NOENT, "The handle is not added"},
 };
 
@@ -172,7 +168,7 @@ void Poll::add(Handle *handle, PollMode mode, cb_t cb,  void *arg) {
     }
     epevt.events |= getEpollEvent(mode);
     epevt.data.ptr = static_cast<void *>(state);
-    ret = epoll_ctl(priv->epfd, epopt, handle->getFileNo(), &epevt);
+    ret = epoll_ctl(priv->epfd, epopt, handle->priv->fd, &epevt);
     if (ret < 0) {
         if (epopt == EPOLL_CTL_ADD) {
             delete state;
@@ -250,7 +246,7 @@ void Poll::del(Handle *handle, PollMode mode) {
             " the handle is not added");
     }
     epevt.data.ptr = static_cast<void *>(state);
-    ret = epoll_ctl(priv->epfd, epopt, handle->getFileNo(),
+    ret = epoll_ctl(priv->epfd, epopt, handle->priv->fd,
         epopt == EPOLL_CTL_MOD ? &epevt : nullptr);
     if (ret < 0) {
         epollCtlExcept(epopt, errno, this);
@@ -313,25 +309,15 @@ static uint32_t getEpollEvent(Poll::PollMode mode) {
     }
 }
 
-static const EpollCtlErrDesc *getEpollCtlErrDesc(int err,
-    const EpollCtlErrDesc *descs, int len) {
-    for (int i = 0; i < len; i++) {
-        if (descs[i].epollErr == err) {
-            return &descs[i];
-        }
-    }
-    return nullptr;
-}
-
 static void epollCtlExcept(int epopt, int err, Poll *poll) {
-    const EpollCtlErrDesc *desc = nullptr;
+    const ErrorDesc *desc = nullptr;
     switch (epopt) {
     case EPOLL_CTL_ADD:
-        desc = getEpollCtlErrDesc(err, epollCtlAddErrDescs,
+        desc = getErrorDesc(err, epollCtlAddErrDescs,
             ARRAY_LEN(epollCtlAddErrDescs));
         break;
     case EPOLL_CTL_MOD:
-        desc = getEpollCtlErrDesc(err, epollCtlModErrDescs,
+        desc = getErrorDesc(err, epollCtlModErrDescs,
             ARRAY_LEN(epollCtlModErrDescs));
         break;
     case EPOLL_CTL_DEL:
@@ -340,7 +326,7 @@ static void epollCtlExcept(int epopt, int err, Poll *poll) {
         return;
     }
     if (!desc) {
-        desc = getEpollCtlErrDesc(err, epollCtlCommonErrDescs,
+        desc = getErrorDesc(err, epollCtlCommonErrDescs,
             ARRAY_LEN(epollCtlCommonErrDescs));
     }
     if (desc) {
