@@ -57,27 +57,22 @@ static const ErrorDesc rwErrDescs[] = {
     {EINTR, common::ERR_INTR, "The call was interrupted by a signal"},
 };
 
-static int getOpenFlag(int mode) {
-    int flag = 0;
-    bool read = mode & Handle::MO_READ;
-    bool write = mode & Handle::MO_WRITE;
-    if (read && write) {
-        flag |= O_RDWR;
-    } else if (read) {
-        flag |= O_RDONLY;
-    } else if (write) {
-        flag |= O_WRONLY;
-    }
-    if (mode & Handle::MO_CREAT) {
-        flag |= O_CREAT;
-    }
-    if (mode & Handle::MO_NOBLOCK) {
-        flag |= O_NONBLOCK;
-    }
-    if (mode & Handle::MO_TRUNC) {
-        flag |= O_TRUNC;
-    }
-    return flag;
+Handle *Handle::in() {
+    static Handle *inHandle = new Handle;
+    inHandle->priv->fd = STDIN_FILENO;
+    return inHandle;
+}
+
+Handle *Handle::out() {
+    static Handle *outHandle = new Handle;
+    outHandle->priv->fd = STDOUT_FILENO;
+    return outHandle;
+}
+
+Handle *Handle::err() {
+    static Handle *errHandle = new Handle;
+    errHandle->priv->fd = STDERR_FILENO;
+    return errHandle;
 }
 
 void Handle::print(const char *fmt, ...) {
@@ -106,18 +101,6 @@ void Handle::vprint(const char *fmt, va_list args) {
         return;
     }
     write(buf, size);
-}
-
-Handle::Handle(const char *path, int mode): priv(new HandlePriv) {
-    ASSERT(path);
-    int fd = open(path, getOpenFlag(mode), 0664);
-    if (fd < 0) {
-        const ErrorDesc *desc = getErrorDesc(errno,
-            openErrDescs, ARRAY_LEN(openErrDescs));
-        throw HandleException(this, desc->err, desc->msg);
-        return;
-    }
-    priv->fd = fd;
 }
 
 Handle::Handle(): priv(new HandlePriv) {}
@@ -151,18 +134,53 @@ size_t Handle::read(void *buf, size_t len) {
     return static_cast<size_t>(rlen);
 }
 
-size_t Handle::seek(SeekMode mode, ssize_t len) {
+static int getOpenFlag(int mode) {
+    int flag = 0;
+    bool read = mode & FileHandle::F_READ;
+    bool write = mode & FileHandle::F_WRITE;
+    if (read && write) {
+        flag |= O_RDWR;
+    } else if (read) {
+        flag |= O_RDONLY;
+    } else if (write) {
+        flag |= O_WRONLY;
+    }
+    if (mode & FileHandle::F_CREAT) {
+        flag |= O_CREAT;
+    }
+    if (mode & FileHandle::F_NOBLOCK) {
+        flag |= O_NONBLOCK;
+    }
+    if (mode & FileHandle::F_TRUNC) {
+        flag |= O_TRUNC;
+    }
+    return flag;
+}
+
+FileHandle::FileHandle(const char *path, int mode) {
+    ASSERT(path);
+    int fd = open(path, getOpenFlag(mode), 0664);
+    if (fd < 0) {
+        const ErrorDesc *desc = getErrorDesc(errno,
+            openErrDescs, ARRAY_LEN(openErrDescs));
+        throw HandleException(this, desc->err, desc->msg);
+        return;
+    }
+    priv->fd = fd;
+}
+
+size_t FileHandle::seek(SeekMode mode, ssize_t len) {
     int whence;
     off_t ret;
     switch (mode) {
-    case SEEK_MO_SET:
+    case S_SET:
         whence = SEEK_SET;
         break;
-    case SEEK_MO_CUR:
-        whence = SEEK_MO_CUR;
+    case S_CUR:
+        whence = S_CUR;
         break;
-    case SEEK_MO_END:
-        whence = SEEK_MO_END;
+    case S_END:
+        whence = S_END;
         break;
     }
     ret = ::lseek(priv->fd, len, whence);
@@ -171,24 +189,6 @@ size_t Handle::seek(SeekMode mode, ssize_t len) {
         return 0;
     }
     return static_cast<size_t>(ret);
-}
-
-Handle *Handle::in() {
-    static Handle *inHandle = new Handle;
-    inHandle->priv->fd = STDIN_FILENO;
-    return inHandle;
-}
-
-Handle *Handle::out() {
-    static Handle *outHandle = new Handle;
-    outHandle->priv->fd = STDOUT_FILENO;
-    return outHandle;
-}
-
-Handle *Handle::err() {
-    static Handle *errHandle = new Handle;
-    errHandle->priv->fd = STDERR_FILENO;
-    return errHandle;
 }
 
 }  // namespace platform

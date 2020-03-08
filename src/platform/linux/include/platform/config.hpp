@@ -29,6 +29,7 @@
 /// Features supported by the platform.
 #define PFM_SUPPORT_C_LIBRARY
 #define PFM_SUPPORT_FILE_HANDLE
+#define PFM_SUPPORT_SOCKET_HANDLE
 
 /// Enable debug.
 #define PFM_DEBUG

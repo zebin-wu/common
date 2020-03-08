@@ -50,30 +50,52 @@ class Handle {
     void print(const char *fmt, ...) ARGS_FORMAT(2, 3);
     void vprint(const char *fmt, va_list args);
 
+ protected:
+    friend class Poll;
+    HandlePriv *priv;
+    Handle();
+};
+
 #ifdef PFM_SUPPORT_FILE_HANDLE
-    enum Mode {
-        MO_WRITE = (1 << 0),
-        MO_READ = (1 << 1),
-        MO_CREAT = (1 << 2),
-        MO_TRUNC = (1 << 3),
-        MO_NOBLOCK = (1 << 4),
+class FileHandle: public Handle {
+ public:
+    enum Flag {
+        F_WRITE = (1 << 0),
+        F_READ = (1 << 1),
+        F_CREAT = (1 << 2),
+        F_TRUNC = (1 << 3),
+        F_NOBLOCK = (1 << 4),
     };
 
     enum SeekMode {
-        SEEK_MO_SET,
-        SEEK_MO_END,
-        SEEK_MO_CUR,
+        S_SET,
+        S_END,
+        S_CUR,
     };
 
-    explicit Handle(const char *path, int mode);
+    explicit FileHandle(const char *path, int flag);
     size_t seek(SeekMode mode, ssize_t len);
+};
 #endif  // PFM_SUPPORT_FILE_HANDLE
 
- private:
-    friend class Poll;
-    Handle();
-    HandlePriv *priv;
+#ifdef PFM_SUPPORT_SOCKET_HANDLE
+class SocketHandle: public Handle {
+ public:
+    enum DomainType {
+        D_UNIX,
+        D_IPV4,
+        D_IPV6,
+    };
+
+    enum SockType {
+        S_TCP,
+        S_UDP,
+        S_RAM,
+    };
+
+    explicit SocketHandle(DomainType domain, SockType sock);
 };
+#endif  // PFM_SUPPORT_SOCKET_HANDLE
 
 class HandleException: public common::Exception {
  public:
