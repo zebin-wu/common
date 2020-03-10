@@ -47,7 +47,7 @@ class Poll {
     };
 
     /// A callback function of the handle evnet.
-    typedef void (*cb_t)(Poll::Event event, Handle *handle, void *arg);
+    typedef void (*cb_t)(Poll::Event event, Handle & handle, void *arg);
 
     Poll();
     ~Poll();
@@ -61,7 +61,7 @@ class Poll {
      * @param cb is the callback of the handle evnet
      * @param arg is a argument to pass to the callback function
     */
-    void add(Handle *handle, Event event, cb_t cb, void *arg);
+    void add(Handle & handle, Event event, cb_t cb, void *arg);
 
     /**
      * @brief Modify already added handle events.
@@ -71,7 +71,7 @@ class Poll {
      * @param cb is the callback of the handle evnet
      * @param arg is a argument to pass to the callback function
     */
-    void mod(Handle *handle, Event event, cb_t cb, void *arg);
+    void mod(Handle & handle, Event event, cb_t cb, void *arg);
 
     /**
      * @brief Delete already added handle events.
@@ -79,7 +79,7 @@ class Poll {
      * @param handle is a point to handle
      * @param event is the event of the handle
     */
-    void del(Handle *handle, Event event);
+    void del(Handle & handle, Event event);
 
     /**
      * @brief It blocks the thread for the max_wait ms, and do the platform polling.
