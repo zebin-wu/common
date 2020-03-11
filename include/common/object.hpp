@@ -21,48 +21,33 @@
 */
 #pragma once
 
-#include <common/error.hpp>
-
-/**
- * @file error.hpp
- * @brief class Exception
-*/
-
 namespace common {
 
-class Exception {
+/**
+ * \brief Root class of the type hierarchy
+ *
+ * All events and event handlers derive from this class
+ */
+class Object {
  public:
-    explicit Exception(ErrorCode err): err(err), _message(nullptr) {}
-    explicit Exception(ErrorCode err, const char *message):
-        err(err), _message(message) {}
+    /**
+     * @brief Default empty constructor
+     */
+    Object() { }
 
-    const char *what() const {
-        return getErrorString(err);
-    }
 
-    const char *message() const {
-        return _message;
-    }
+    /**
+     * Empty virtual destructor
+     */
+    virtual ~Object() { }
 
- private:
-    ErrorCode err;
-    const char *_message;
-};
 
-template <class T>
-class ObjectException: public Exception {
- public:
-    explicit ObjectException(T *t, common::ErrorCode err):
-        Exception(err), t(t) {}
-    explicit ObjectException(T *t,
-        common::ErrorCode err, const char *message):
-        Exception(err, message), t(t) {}
-
-    T *object() const {
-        return t;
-    }
- private:
-    T *t;
+    /**
+     * @brief Default empty copy constructor
+     *
+     * @param other The instance to copy from
+     */
+    Object(const Object &other) { }
 };
 
 }  // namespace common
