@@ -32,26 +32,54 @@
 
 namespace platform {
 
+/// Only used by class Poll, need a platform to implement.
 class PollPriv;
 
 class Poll {
  public:
-    enum PollMode {
-        POLL_READ,
-        POLL_WRITE,
-        POLL_ERR,
+    /**
+     * @enum Handle events that can be polled.
+    */
+    enum Event {
+        EV_READ,      ///< read event
+        EV_WRITE,     ///< write event
+        EV_ERR,       ///< error event
     };
 
-    typedef void (*cb_t)(Poll::PollMode mode, Handle *handle, void *arg);
+    /// A callback function of the handle evnet.
+    typedef void (*cb_t)(Poll::Event event, Handle *handle, void *arg);
 
     Poll();
     ~Poll();
 
-    void add(Handle *handle, PollMode mode, cb_t cb, void *arg);
+    /**
+     * @brief Add handle event to the poll.
+     * @note A handle can be added multiple events, but a handle event can be added only once.
+     *
+     * @param handle is a point to handle
+     * @param event is the event of the handle
+     * @param cb is the callback of the handle evnet
+     * @param arg is a argument to pass to the callback function
+    */
+    void add(Handle *handle, Event event, cb_t cb, void *arg);
 
-    void mod(Handle *handle, PollMode mode, cb_t cb, void *arg);
+    /**
+     * @brief Modify already added handle events.
+     *
+     * @param handle is a point to handle
+     * @param event is the event of the handle
+     * @param cb is the callback of the handle evnet
+     * @param arg is a argument to pass to the callback function
+    */
+    void mod(Handle *handle, Event event, cb_t cb, void *arg);
 
-    void del(Handle *handle, PollMode mode);
+    /**
+     * @brief Delete already added handle events.
+     *
+     * @param handle is a point to handle
+     * @param event is the event of the handle
+    */
+    void del(Handle *handle, Event event);
 
     /**
      * @brief It blocks the thread for the max_wait ms, and do the platform polling.
@@ -60,19 +88,15 @@ class Poll {
     */
     void polling(int timeout);
 
+    /**
+     * @brief Wakeup the polling().
+    */
+    void wakeup();
+
  private:
     PollPriv *priv;
 };
 
-class PollException: public common::Exception {
- public:
-    explicit PollException(Poll *poll, common::ErrorCode err):
-        Exception(err), poll(poll) {}
-    explicit PollException(Poll *poll,
-        common::ErrorCode err, const char *message):
-        Exception(err, message), poll(poll) {}
- private:
-    Poll *poll;
-};
+typedef common::ObjectException<Poll> PollException;
 
 }  // namespace platform

@@ -52,9 +52,9 @@ static const ErrorDesc epollCtlModErrDescs[] = {
     {ENOENT, common::ERR_NOENT, "The handle is not added"},
 };
 
-static uint32_t getEpollEvent(Poll::PollMode mode);
+static uint32_t getEpollEvent(Poll::Event event);
 static void epollCtlExcept(int epopt, int err, Poll *poll);
-static void callPollEvent(HandleState *state, Poll::PollMode mode);
+static void callPollEvent(HandleState *state, Poll::Event event);
 
 class PollCallback {
  public:
@@ -65,22 +65,22 @@ class PollCallback {
 
 class HandleState {
  public:
-    explicit HandleState(Poll::PollMode mode, Handle *handle,
+    explicit HandleState(Poll::Event event, Handle *handle,
         Poll::cb_t cb, void *arg = nullptr): handle(handle) {
-        cbMap.insert({mode, new PollCallback(cb, arg)});
+        cbMap.insert({event, new PollCallback(cb, arg)});
     }
 
     ~HandleState() {
-        std::map<Poll::PollMode, PollCallback *>::iterator it;
+        std::map<Poll::Event, PollCallback *>::iterator it;
         for (it = cbMap.begin(); it != cbMap.end(); it++) {
             delete it->second;
         }
     }
 
-    PollCallback *findPollCallback(Poll::PollMode mode) {
-        std::map<Poll::PollMode, PollCallback *>::iterator it;
+    PollCallback *findPollCallback(Poll::Event event) {
+        std::map<Poll::Event, PollCallback *>::iterator it;
 
-        it = cbMap.find(mode);
+        it = cbMap.find(event);
         if (it == cbMap.end()) {
             return nullptr;
         } else {
@@ -89,7 +89,7 @@ class HandleState {
     }
 
     Handle *handle;
-    std::map<Poll::PollMode, PollCallback *> cbMap;
+    std::map<Poll::Event, PollCallback *> cbMap;
 };
 
 class PollPriv {
@@ -136,9 +136,9 @@ Poll::~Poll() {
     delete priv;
 }
 
-void Poll::add(Handle *handle, PollMode mode, cb_t cb,  void *arg) {
+void Poll::add(Handle *handle, Event event, cb_t cb,  void *arg) {
     std::map<Handle *, HandleState *>::iterator stateIt;
-    std::map<Poll::PollMode, PollCallback *>::iterator cbIt;
+    std::map<Poll::Event, PollCallback *>::iterator cbIt;
     HandleState *state = nullptr;
     PollCallback *pollCb = nullptr;
     struct epoll_event epevt;
@@ -152,7 +152,7 @@ void Poll::add(Handle *handle, PollMode mode, cb_t cb,  void *arg) {
     if (stateIt != priv->stateMap.end()) {
         epopt = EPOLL_CTL_MOD;
         state = stateIt->second;
-        pollCb = state->findPollCallback(mode);
+        pollCb = state->findPollCallback(event);
         if (pollCb) {
             throw PollException(this, common::ERR_EXIST,
                 "the poll callback of the handle is added");
@@ -164,9 +164,9 @@ void Poll::add(Handle *handle, PollMode mode, cb_t cb,  void *arg) {
         }
     } else {
         epopt = EPOLL_CTL_ADD;
-        state = new HandleState(mode, handle, cb, arg);
+        state = new HandleState(event, handle, cb, arg);
     }
-    epevt.events |= getEpollEvent(mode);
+    epevt.events |= getEpollEvent(event);
     epevt.data.ptr = static_cast<void *>(state);
     ret = epoll_ctl(priv->epfd, epopt, handle->priv->fd, &epevt);
     if (ret < 0) {
@@ -177,14 +177,14 @@ void Poll::add(Handle *handle, PollMode mode, cb_t cb,  void *arg) {
         goto end;
     }
     if (epopt == EPOLL_CTL_MOD) {
-        state->cbMap.insert({mode, new PollCallback(cb, arg)});
+        state->cbMap.insert({event, new PollCallback(cb, arg)});
     }
     priv->stateMap.insert({handle, state});
 end:
     priv->mutex.unlock();
 }
 
-void Poll::mod(Handle *handle, PollMode mode, cb_t cb, void *arg) {
+void Poll::mod(Handle *handle, Event event, cb_t cb, void *arg) {
     std::map<Handle *, HandleState *>::iterator stateIt;
     HandleState *state = nullptr;
     PollCallback *pollCb = nullptr;
@@ -195,7 +195,7 @@ void Poll::mod(Handle *handle, PollMode mode, cb_t cb, void *arg) {
     stateIt = priv->stateMap.find(handle);
     if (stateIt != priv->stateMap.end()) {
         state = stateIt->second;
-        pollCb = state->findPollCallback(mode);
+        pollCb = state->findPollCallback(event);
         if (!pollCb) {
             throw PollException(this, common::ERR_NOENT,
                 "the poll callback of the handle is not added");
@@ -211,9 +211,9 @@ end:
     priv->mutex.unlock();
 }
 
-void Poll::del(Handle *handle, PollMode mode) {
+void Poll::del(Handle *handle, Event event) {
     std::map<Handle *, HandleState *>::iterator stateIt;
-    std::map<Poll::PollMode, PollCallback *>::iterator cbIt;
+    std::map<Poll::Event, PollCallback *>::iterator cbIt;
     HandleState *state = nullptr;
     PollCallback *pollCb = nullptr;
     struct epoll_event epevt;
@@ -225,7 +225,7 @@ void Poll::del(Handle *handle, PollMode mode) {
     stateIt = priv->stateMap.find(handle);
     if (stateIt != priv->stateMap.end()) {
         state = stateIt->second;
-        pollCb = state->findPollCallback(mode);
+        pollCb = state->findPollCallback(event);
         if (!pollCb) {
             throw PollException(this, common::ERR_NOENT,
                 "the poll callback of the handle is not added");
@@ -239,7 +239,7 @@ void Poll::del(Handle *handle, PollMode mode) {
                 cbIt != state->cbMap.end(); cbIt++) {
                 epevt.events |= getEpollEvent(cbIt->first);
             }
-            epevt.events &= ~getEpollEvent(mode);
+            epevt.events &= ~getEpollEvent(event);
         }
     } else {
         throw PollException(this, common::ERR_NOENT,
@@ -253,7 +253,7 @@ void Poll::del(Handle *handle, PollMode mode) {
         goto end;
     }
     if (epopt == EPOLL_CTL_MOD) {
-        state->cbMap.erase(mode);
+        state->cbMap.erase(event);
     } else {
         priv->stateMap.erase(handle);
     }
@@ -284,25 +284,29 @@ void Poll::polling(int timeout) {
         epevt = priv->events + i;
         state = static_cast<HandleState *>(epevt->data.ptr);
         if (epevt->events & EPOLLIN) {
-            callPollEvent(state, POLL_READ);
+            callPollEvent(state, EV_READ);
         }
         if (epevt->events & EPOLLOUT) {
-            callPollEvent(state, POLL_WRITE);
+            callPollEvent(state, EV_WRITE);
         }
         if (epevt->events & EPOLLERR) {
-            callPollEvent(state, POLL_ERR);
+            callPollEvent(state, EV_ERR);
         }
     }
     priv->isPolling = false;
 }
 
-static uint32_t getEpollEvent(Poll::PollMode mode) {
-    switch (mode) {
-    case Poll::POLL_WRITE:
+void Poll::wakeup() {
+    {}
+}
+
+static uint32_t getEpollEvent(Poll::Event event) {
+    switch (event) {
+    case Poll::EV_WRITE:
         return EPOLLOUT;
-    case Poll::POLL_READ:
+    case Poll::EV_READ:
         return EPOLLIN;
-    case Poll::POLL_ERR:
+    case Poll::EV_ERR:
         return EPOLLERR;
     default:
         return 0;
@@ -334,10 +338,10 @@ static void epollCtlExcept(int epopt, int err, Poll *poll) {
     }
 }
 
-static void callPollEvent(HandleState *state, Poll::PollMode mode) {
-    PollCallback *pollCb = state->findPollCallback(mode);
+static void callPollEvent(HandleState *state, Poll::Event event) {
+    PollCallback *pollCb = state->findPollCallback(event);
     if (pollCb) {
-        pollCb->cb(mode, state->handle, pollCb->arg);
+        pollCb->cb(event, state->handle, pollCb->arg);
     }
 }
 

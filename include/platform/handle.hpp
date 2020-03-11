@@ -24,6 +24,7 @@
 #include <common/exception.hpp>
 #include <platform/type.hpp>
 #include <platform/args.hpp>
+#include <platform/config.hpp>
 
 /**
  * @file handle.hpp
@@ -32,43 +33,69 @@
 
 namespace platform {
 
+/// Only used by class Handle, need a platform to implement.
 class HandlePriv;
 
 class Handle {
  public:
-    enum Mode {
-        MO_WRITE = (1 << 0),
-        MO_READ = (1 << 1),
-        MO_CREAT = (1 << 2),
-        MO_TRUNC = (1 << 3),
-        MO_NOBLOCK = (1 << 4),
-    };
-
-    enum SeekMode {
-        SEEK_MO_SET,
-        SEEK_MO_END,
-        SEEK_MO_CUR,
-    };
-
-    explicit Handle(const char *path, int mode);
-    ~Handle();
-
-    size_t write(const void *buf, size_t len);
-    size_t read(void *buf, size_t len);
-    size_t seek(SeekMode mode, ssize_t len);
-
-    void print(const char *fmt, ...) ARGS_FORMAT(2, 3);
-    void vprint(const char *fmt, va_list args);
-
     static Handle *in();
     static Handle *out();
     static Handle *err();
 
- private:
+    ~Handle();
+
+    size_t write(const void *buf, size_t len);
+    size_t read(void *buf, size_t len);
+
+    void print(const char *fmt, ...) ARGS_FORMAT(2, 3);
+    void vprint(const char *fmt, va_list args);
+
+ protected:
     friend class Poll;
-    Handle();
     HandlePriv *priv;
+    Handle();
 };
+
+#ifdef PFM_SUPPORT_FILE_HANDLE
+class FileHandle: public Handle {
+ public:
+    enum Flag {
+        F_WRITE = (1 << 0),
+        F_READ = (1 << 1),
+        F_CREAT = (1 << 2),
+        F_TRUNC = (1 << 3),
+        F_NOBLOCK = (1 << 4),
+    };
+
+    enum SeekMode {
+        S_SET,
+        S_END,
+        S_CUR,
+    };
+
+    explicit FileHandle(const char *path, int flag);
+    size_t seek(SeekMode mode, ssize_t len);
+};
+#endif  // PFM_SUPPORT_FILE_HANDLE
+
+#ifdef PFM_SUPPORT_SOCKET_HANDLE
+class SocketHandle: public Handle {
+ public:
+    enum DomainType {
+        D_UNIX,
+        D_IPV4,
+        D_IPV6,
+    };
+
+    enum SockType {
+        S_TCP,
+        S_UDP,
+        S_RAM,
+    };
+
+    explicit SocketHandle(DomainType domain, SockType sock);
+};
+#endif  // PFM_SUPPORT_SOCKET_HANDLE
 
 class HandleException: public common::Exception {
  public:

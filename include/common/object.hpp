@@ -21,51 +21,33 @@
 */
 #pragma once
 
-#include <common/error.hpp>
+namespace common {
 
 /**
- * @file lock.hpp
- * @brief Platform lock interfaces
-*/
-
-namespace platform {
-
-/// Only used by class Lock, need a platform to implement.
-class LockPriv;
-
-class Lock {
+ * \brief Root class of the type hierarchy
+ *
+ * All events and event handlers derive from this class
+ */
+class Object {
  public:
     /**
-     * @enum Lock types.
-    */
-    enum Type{
-        LOCK_MUTEX,         ///< mutex
-    };
+     * @brief Default empty constructor
+     */
+    Object() { }
 
-    explicit Lock(Type type = LOCK_MUTEX);
-    ~Lock();
 
     /**
-     * @brief Lock the lock or take the semaphore.
-     * @details The function blocks the current thread when the lock is locked.
-    */
-    void lock();
+     * Empty virtual destructor
+     */
+    virtual ~Object() { }
+
 
     /**
-     * @brief Unlock the lock or give the semaphore.
-    */
-    void unlock();
-
-    /**
-     * @brief Get the type of lock.
-     * 
-     * @return the type of lock.
-    */
-    Type getType() const { return type; }
-
- private:
-    LockPriv *priv;
-    const Type type;
+     * @brief Default empty copy constructor
+     *
+     * @param other The instance to copy from
+     */
+    Object(const Object &other) { }
 };
 
-}  // namespace platform
+}  // namespace common

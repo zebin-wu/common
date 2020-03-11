@@ -49,4 +49,20 @@ class Exception {
     const char *_message;
 };
 
+template <class T>
+class ObjectException: public Exception {
+ public:
+    explicit ObjectException(T *t, common::ErrorCode err):
+        Exception(err), t(t) {}
+    explicit ObjectException(T *t,
+        common::ErrorCode err, const char *message):
+        Exception(err, message), t(t) {}
+
+    T *object() const {
+        return t;
+    }
+ private:
+    T *t;
+};
+
 }  // namespace common
