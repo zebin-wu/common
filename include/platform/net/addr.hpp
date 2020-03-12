@@ -21,48 +21,19 @@
 */
 #pragma once
 
-#include <common/error.hpp>
+#include <platform/type.hpp>
 
-/**
- * @file exception.hpp
- * @brief class Exception
-*/
+namespace platform {
 
-namespace common {
+namespace net {
 
-class Exception {
+class Addr {
  public:
-    explicit Exception(ErrorCode err): err(err), _message(nullptr) {}
-    explicit Exception(ErrorCode err, const char *message):
-        err(err), _message(message) {}
+    Addr();
 
-    const char *what() const {
-        return getErrorString(err);
-    }
-
-    const char *message() const {
-        return _message;
-    }
-
- private:
-    ErrorCode err;
-    const char *_message;
+    virtual ~Addr() {}
 };
 
-template <class T>
-class ObjectException: public Exception {
- public:
-    explicit ObjectException(T *t, common::ErrorCode err):
-        Exception(err), t(t) {}
-    explicit ObjectException(T *t,
-        common::ErrorCode err, const char *message):
-        Exception(err, message), t(t) {}
+}  // namespace net
 
-    T *object() const {
-        return t;
-    }
- private:
-    T *t;
-};
-
-}  // namespace common
+}  // namespace platform
