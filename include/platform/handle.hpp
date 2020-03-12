@@ -25,6 +25,7 @@
 #include <platform/type.hpp>
 #include <platform/args.hpp>
 #include <platform/config.hpp>
+#include <platform/net/addr.hpp>
 
 /**
  * @file handle.hpp
@@ -55,6 +56,8 @@ class Handle {
     HandlePriv *priv;
     Handle();
 };
+
+typedef common::ObjectException<Handle> HandleException;
 
 #ifdef PFM_SUPPORT_FILE_HANDLE
 class FileHandle: public Handle {
@@ -94,20 +97,13 @@ class SocketHandle: public Handle {
     };
 
     explicit SocketHandle(DomainType domain, SockType sock);
+
+    void bind(const platform::net::Addr & addr);
+
+    void accept(const platform::net::Addr & addr);
+
+    void connect(const platform::net::Addr & addr);
 };
 #endif  // PFM_SUPPORT_SOCKET_HANDLE
-
-class HandleException: public common::Exception {
- public:
-    explicit HandleException(Handle *handle, common::ErrorCode err):
-        Exception(err), handle(handle) {}
-    explicit HandleException(Handle *handle,
-        common::ErrorCode err, const char *message):
-        Exception(err, message), handle(handle) {}
-
-    Handle *getHandle() const { return handle; }
- private:
-    Handle *handle;
-};
 
 }  // namespace platform
