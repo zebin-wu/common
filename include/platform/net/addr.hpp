@@ -29,9 +29,9 @@ namespace net {
 
 class Addr {
  public:
-	/**
-	 * @brief Default constructor
-	*/
+    /**
+     * @brief Default constructor
+    */
     Addr();
 
     /**
