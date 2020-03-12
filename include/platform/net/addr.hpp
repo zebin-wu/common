@@ -29,8 +29,14 @@ namespace net {
 
 class Addr {
  public:
+	/**
+	 * @brief Default constructor
+	*/
     Addr();
 
+    /**
+     * @brief Empty virtual destructor
+    */
     virtual ~Addr() {}
 };
 

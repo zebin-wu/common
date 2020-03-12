@@ -71,16 +71,13 @@ class HandleState {
     }
 
     ~HandleState() {
-        std::map<Poll::Event, PollCallback *>::iterator it;
-        for (it = cbMap.begin(); it != cbMap.end(); it++) {
-            delete it->second;
+        for (auto i : cbMap) {
+            delete i.second;
         }
     }
 
     PollCallback *findPollCallback(Poll::Event event) {
-        std::map<Poll::Event, PollCallback *>::iterator it;
-
-        it = cbMap.find(event);
+        auto it = cbMap.find(event);
         if (it == cbMap.end()) {
             return nullptr;
         } else {
@@ -137,8 +134,6 @@ Poll::~Poll() {
 }
 
 void Poll::add(Handle *handle, Event event, cb_t cb,  void *arg) {
-    std::map<Handle *, HandleState *>::iterator stateIt;
-    std::map<Poll::Event, PollCallback *>::iterator cbIt;
     HandleState *state = nullptr;
     PollCallback *pollCb = nullptr;
     struct epoll_event epevt;
@@ -148,7 +143,7 @@ void Poll::add(Handle *handle, Event event, cb_t cb,  void *arg) {
     ASSERT(handle);
     ASSERT(cb);
     priv->mutex.lock();
-    stateIt = priv->stateMap.find(handle);
+    auto stateIt = priv->stateMap.find(handle);
     if (stateIt != priv->stateMap.end()) {
         epopt = EPOLL_CTL_MOD;
         state = stateIt->second;
@@ -158,9 +153,8 @@ void Poll::add(Handle *handle, Event event, cb_t cb,  void *arg) {
                 "the poll callback of the handle is added");
             goto end;
         }
-        for (cbIt = state->cbMap.begin();
-            cbIt != state->cbMap.end(); cbIt++) {
-            epevt.events |= getEpollEvent(cbIt->first);
+        for (auto i : state->cbMap) {
+            epevt.events |= getEpollEvent(i.first);
         }
     } else {
         epopt = EPOLL_CTL_ADD;
@@ -185,14 +179,13 @@ end:
 }
 
 void Poll::mod(Handle *handle, Event event, cb_t cb, void *arg) {
-    std::map<Handle *, HandleState *>::iterator stateIt;
     HandleState *state = nullptr;
     PollCallback *pollCb = nullptr;
 
     ASSERT(handle);
     ASSERT(cb);
     priv->mutex.lock();
-    stateIt = priv->stateMap.find(handle);
+    auto stateIt = priv->stateMap.find(handle);
     if (stateIt != priv->stateMap.end()) {
         state = stateIt->second;
         pollCb = state->findPollCallback(event);
@@ -212,8 +205,6 @@ end:
 }
 
 void Poll::del(Handle *handle, Event event) {
-    std::map<Handle *, HandleState *>::iterator stateIt;
-    std::map<Poll::Event, PollCallback *>::iterator cbIt;
     HandleState *state = nullptr;
     PollCallback *pollCb = nullptr;
     struct epoll_event epevt;
@@ -222,7 +213,7 @@ void Poll::del(Handle *handle, Event event) {
 
     ASSERT(handle);
     priv->mutex.lock();
-    stateIt = priv->stateMap.find(handle);
+    auto stateIt = priv->stateMap.find(handle);
     if (stateIt != priv->stateMap.end()) {
         state = stateIt->second;
         pollCb = state->findPollCallback(event);
@@ -235,9 +226,8 @@ void Poll::del(Handle *handle, Event event) {
             epopt = EPOLL_CTL_DEL;
         } else {
             epopt = EPOLL_CTL_MOD;
-            for (cbIt = state->cbMap.begin();
-                cbIt != state->cbMap.end(); cbIt++) {
-                epevt.events |= getEpollEvent(cbIt->first);
+            for (auto i : state->cbMap) {
+                epevt.events |= getEpollEvent(i.first);
             }
             epevt.events &= ~getEpollEvent(event);
         }
