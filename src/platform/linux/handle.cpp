@@ -34,6 +34,10 @@
 
 namespace platform {
 
+Handle *inHandle = nullptr;
+Handle *outHandle = nullptr;
+Handle *errHandle = nullptr;
+
 static const ErrorDesc openErrDescs[] = {
     {EACCES, common::ERR_PERM,
         "the requested access to the handle is not allowed"},
@@ -58,20 +62,26 @@ static const ErrorDesc rwErrDescs[] = {
 };
 
 Handle *Handle::in() {
-    static Handle *inHandle = new Handle;
-    inHandle->priv->fd = STDIN_FILENO;
+    if (inHandle == nullptr) {
+        inHandle = new Handle;
+        inHandle->priv->fd = STDIN_FILENO;
+    }
     return inHandle;
 }
 
 Handle *Handle::out() {
-    static Handle *outHandle = new Handle;
-    outHandle->priv->fd = STDOUT_FILENO;
+    if (outHandle == nullptr) {
+        outHandle = new Handle;
+        outHandle->priv->fd = STDOUT_FILENO;
+    }
     return outHandle;
 }
 
 Handle *Handle::err() {
-    static Handle *errHandle = new Handle;
-    errHandle->priv->fd = STDERR_FILENO;
+    if (errHandle == nullptr) {
+        errHandle = new Handle;
+        errHandle->priv->fd = STDERR_FILENO;
+    }
     return errHandle;
 }
 
