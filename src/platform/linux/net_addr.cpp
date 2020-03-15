@@ -19,64 +19,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#pragma once
-
-#include <platform/type.hpp>
+#include <platform/net/addr.hpp>
+#include <platform/net/addr_int.hpp>
 
 namespace platform {
 
 namespace net {
 
-class Addr4Priv;
+Addr4::Addr4(u32 ip): Addr(Addr::IPV4), priv(new Addr4Priv) {
+    priv->sin_addr.s_addr = (in_addr_t)htonl((uint32_t)ip);
+}
 
-class Addr {
- public:
-    /**
-     * @enum Address protocol type
-    */
-    enum Type {
-        IPV4,
-    };
+Addr4::Addr4(const Addr4 &addr): Addr(addr.getType()) {
+    priv = new Addr4Priv(*addr.priv);
+}
 
-    /**
-     * @brief Get the type of the address
-     *
-     * @return the type of the address
-    */
-    Type getType() const {
-        return type;
-    }
+Addr4::~Addr4() {
+    delete priv;
+}
 
-    /**
-     * @brief Empty virtual destructor
-    */
-    virtual ~Addr() {}
+void Addr4::setIp(u32 ip) {
+    priv->sin_addr.s_addr = (in_addr_t)htonl((uint32_t)ip);
+}
 
- protected:
-    /**
-     * @brief Default constructor
-    */
-    explicit Addr(Type type): type(type) {}
-
- private:
-    Type type;
-};
-
-class Addr4: public Addr {
- public:
-    explicit Addr4(u32 ip);
-
-    explicit Addr4(const Addr4 &addr);
-
-    ~Addr4();
-
-    void setIp(u32 ip);
-
-    u32 getIp() const;
- private:
-    friend class Handle;
-    Addr4Priv *priv;
-};
+u32 Addr4::getIp() const {
+    return (u32)ntohl((uint32_t)priv->sin_addr.s_addr);
+}
 
 }  // namespace net
 

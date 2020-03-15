@@ -98,11 +98,11 @@ class SocketHandle: public Handle {
 
     explicit SocketHandle(DomainType domain, SockType sock);
 
-    void bind(const platform::net::Addr & addr);
+    void bind(const platform::net::Addr *addr, u16 port);
 
-    void accept(const platform::net::Addr & addr);
+    void accept(const platform::net::Addr *addr, u16 port);
 
-    void connect(const platform::net::Addr & addr);
+    void connect(const platform::net::Addr *addr, u16 port);
 };
 #endif  // PFM_SUPPORT_SOCKET_HANDLE
 

@@ -21,61 +21,20 @@
 */
 #pragma once
 
-#include <platform/type.hpp>
+#include <netinet/in.h>
+
+/**
+ * @file addr_int.hpp
+ * @brief Platform Linux Net Address interfaces
+*/
 
 namespace platform {
 
 namespace net {
 
-class Addr4Priv;
-
-class Addr {
+class Addr4Priv {
  public:
-    /**
-     * @enum Address protocol type
-    */
-    enum Type {
-        IPV4,
-    };
-
-    /**
-     * @brief Get the type of the address
-     *
-     * @return the type of the address
-    */
-    Type getType() const {
-        return type;
-    }
-
-    /**
-     * @brief Empty virtual destructor
-    */
-    virtual ~Addr() {}
-
- protected:
-    /**
-     * @brief Default constructor
-    */
-    explicit Addr(Type type): type(type) {}
-
- private:
-    Type type;
-};
-
-class Addr4: public Addr {
- public:
-    explicit Addr4(u32 ip);
-
-    explicit Addr4(const Addr4 &addr);
-
-    ~Addr4();
-
-    void setIp(u32 ip);
-
-    u32 getIp() const;
- private:
-    friend class Handle;
-    Addr4Priv *priv;
+    in_addr sin_addr;
 };
 
 }  // namespace net

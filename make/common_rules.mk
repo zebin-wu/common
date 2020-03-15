@@ -32,7 +32,7 @@ common: cppstyle $(LIBCOMMON_DYNAMIC) $(LIBCOMMON_STATIC)
 #
 BUILD_CPPSTYLE_DIR ?= $(BUILD_DIR)/cppstyle
 CPPSTYLE ?= cpplint --quiet
-CPPSTYLE_INCLUDES := $(filter-out include, $(foreach dir, $(INCLUDES), $(shell find $(dir) -maxdepth 1 -type d)))
+CPPSTYLE_INCLUDES := $(filter-out include, $(foreach dir, $(INCLUDES), $(shell find $(dir) -maxdepth 2 -type d)))
 CPPSTYLE_HEADERS := $(foreach dir, $(CPPSTYLE_INCLUDES), $(wildcard $(dir)/*.hpp))
 CPPSTYLE_SOURCES := $(SOURCES)
 CPPSTYLE_FILES := $(CPPSTYLE_HEADERS) $(CPPSTYLE_SOURCES)
